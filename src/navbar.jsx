@@ -1,7 +1,7 @@
 import React from "react";
 import "./navbarstyle.css";
 
-function Navbar  () {
+export const Navbar = () => {
   return (
     <div>
       <div id="main-navbar" className="navbar">
@@ -17,11 +17,12 @@ function Navbar  () {
             <li>
               <a href="/home">Home</a>
             </li>
+            <li>
+              <a href="/home">Home</a>
+            </li>
           </ul>
         </nav>
       </div>
     </div>
   );
 };
-
-export default Navbar;

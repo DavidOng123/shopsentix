@@ -1,30 +1,53 @@
+
 .navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: #333;
-    color: #fff;
-    opacity: 0.8;
-    width: 100%;
-    height: 70px;
-    position: fixed;
-    top: 0px;
-    padding: 0 30px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #87CEEB;
+  color: #FFFFFF;
+  opacity: 0.8;
+  height: 70px;
+}
+
+ul {
+  display: flex;
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  padding: 0 20px;
+}
+
+li:hover {
+  background-color: black;
+}
+
+a {
+  text-decoration: none;
+  color: #fff;
+}
+
+.logo {
+  padding-left: 20px;
+}
+
+/* Media query for responsive design */
+@media (max-width: 768px) {
+  .navbar {
+    height: auto; /* Change height to auto for mobile screens */
+    flex-direction: column; /* Stack items vertically on smaller screens */
+    text-align: center; /* Center-align text */
   }
+
   ul {
-    display: flex;
+    flex-direction: column; /* Stack list items vertically */
+    padding: 10px 0; /* Add some padding for readability */
   }
+
   li {
-    list-style-type: none;
-    padding: 100px;
+    padding: 10px 0;
   }
-  a {
-    text-decoration: none;
-  }
-  .navbar a {
-    color: #fff;
-  }
-  .navbar .log {
-    font-weight: 400;
-  }
-  
+}
