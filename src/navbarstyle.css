@@ -1,3 +1,5 @@
+@import url(https://fonts.googleapis.com/css?family=Montserrat);
+
 
 .navbar {
   font-family: 'Montserrat', sans-serif;
@@ -5,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #87CEEB;
+  background-color: #FFA500; /* Bright orange */
   color: #FFFFFF;
   opacity: 0.8;
   height: 70px;
@@ -14,15 +16,15 @@
 ul {
   display: flex;
   list-style-type: none;
-  padding: 0;
+  padding: 10px;
 }
 
 li {
-  padding: 0 20px;
+  padding: 20px 20px;
 }
 
-li:hover {
-  background-color: black;
+.navbar li:hover {
+  background-color: #FFD700;
 }
 
 a {
@@ -44,10 +46,52 @@ a {
 
   ul {
     flex-direction: column; /* Stack list items vertically */
+    
     padding: 10px 0; /* Add some padding for readability */
   }
 
   li {
     padding: 10px 0;
   }
+}
+
+/* CSS for the search bar */
+.search-bar {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  background-color: whitesmoke; /* Set the background color of the search bar */
+  width: 200px; /* Adjust the width to make it narrower */
+}
+
+.search-input {
+  padding: 10px;
+  border: none;
+  width: 100%; /* The input field still takes up the full width of the container */
+  font-size: 16px;
+  background: transparent; /* Make the input background transparent */
+}
+
+.search-button {
+  border: none;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+
+/* Style the search input on focus */
+.search-input:focus {
+  outline: none;
+  border: 1px solid #007BFF; /* Add a border and change border color on focus */
+}
+
+/* CSS for the logo */
+.logo {
+  width: 50px; /* Adjust the width as needed */
+  height: 50px; /* Set the height to make it round */
+  border-radius: 50%; /* Create a round shape */
+  overflow: hidden; /* Hide any overflow beyond the round shape */
+  object-fit: cover; /* Maintain aspect ratio and cover the container */
+  margin-right: 20px; /* Add spacing between the logo and search bar */
 }
