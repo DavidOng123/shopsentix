@@ -1,11 +1,14 @@
-
+@import url(https://fonts.googleapis.com/css?family=Montserrat);
 .footer {
-    background-color: #87CEEB; 
-    color: #FFFFFF;
+    font-family: 'Montserrat', sans-serif;
+  font-weight: bold;
+  background-color: #FFA500; /* Light blue */
+  color: #FFFFFF;
     opacity: 0.8;
     text-align: center;
     padding: 10px 0;
     position: absolute;
+    position: sticky;
     bottom: 0;
     width: 100%;
   }
