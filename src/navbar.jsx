@@ -1,6 +1,7 @@
 import React from "react";
 import "./navbarstyle.css";
-import logoImage from "./Logo.png"; // Replace with the path to your logo image
+import { Link } from 'react-router-dom';
+import logoImage from "./Logo.png"; 
 
 export const Navbar = () => {
   return (
@@ -19,16 +20,16 @@ export const Navbar = () => {
         <nav>
           <ul>
             <li>
-              <a href="/home">Home</a>
+            <Link to="/">Home</Link>
             </li>
             <li>
-              <a href="/home">Favourite</a>
+              <a href="/">Favourite</a>
             </li>
             <li>
-              <a href="/home">Cart</a>
+              <a href="/">Cart</a>
             </li>
             <li>
-              <a href="/home">Login | Sign Up</a>
+            <Link to="/login">Login | Sign Up</Link>
             </li>
           </ul>
         </nav>

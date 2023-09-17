@@ -13,63 +13,48 @@
   }
 
 .main-header {
-  background-color: #FFA500; /* Bright orange */
+  background-color: #FFA500;
   color: #FFFFFF;
-  padding: 20px; /* Add some padding to the header */
+  padding: 20px; 
   text-align: center;
   font-family: 'Montserrat', sans-serif;
 }
   
   /* Style for the header title */
   .main-header h1 {
-    font-size: 36px; /* Font size for the header title */
-    margin: 0; /* Remove margin to center the title */
+    font-size: 36px; 
+    margin: 0; 
   }
   
   /* Style for the subheading */
   .main-header p {
-    font-size: 18px; /* Font size for the subheading */
-    margin-top: 10px; /* Add some spacing between the title and subheading */
+    font-size: 18px; 
+    margin-top: 10px; 
   }
-  
-  
-  /* Style for the header title */
-  .main-header h1 {
-    font-size: 36px; /* Font size for the header title */
-    margin: 0; /* Remove margin to center the title */
-  }
-  
-  /* Style for the subheading */
-  .main-header p {
-    font-size: 18px; /* Font size for the subheading */
-    margin-top: 10px; /* Add some spacing between the title and subheading */
-  }
-  
-
-/* Add CSS styles for the carousel container */
-/* Add CSS styles for the carousel container */
+ 
+/* Carousel container */
 .carousel-container {
   
-  max-width: 800px; /* Adjust the maximum width as needed */
-  margin: 0 auto; /* Center the carousel */
-  overflow: hidden; /* Hide any content that exceeds the maximum height */
+  max-width: 800px; 
+  margin: 0 auto; 
+  overflow: hidden; 
 }
 
-/* Add CSS styles for the carousel images */
+/* Carousel images */
 .carousel img {
   max-width: 100%;
-  height: 100%; /* Set the height to 100% to display the full image */
-  object-fit: contain; /* Maintain aspect ratio and fit the entire image within the container */
-  border-radius: 8px; /* Add rounded corners to images */
-  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1); /* Add a subtle shadow effect */
+  height: 100%; 
+  object-fit: contain; 
+  border-radius: 8px; 
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1); 
 }
 
-/* Add CSS styles for the carousel legend (captions) */
+/* Carousel legend (captions) */
 .carousel .legend {
-  background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
-  color: #fff; /* White text color */
-  padding: 8px 16px; /* Padding for captions */
-  border-radius: 0 0 8px 8px; /* Rounded corners for the bottom */
+  background-color: rgba(0, 0, 0, 0.7); 
+  color: #fff; 
+  padding: 8px 16px; 
+  border-radius: 0 0 8px 8px; 
   position: absolute;
   bottom: 0;
   left: 0;
@@ -80,32 +65,32 @@
 
 
 
-/* Style for the category navigation bar */
+/*  category navigation bar */
 .category-bar {
-  background-color: #f0f0f0; /* Set the background color */
-  padding: 10px; /* Add padding to the bar */
-  text-align: center; /* Center-align the buttons */
+  background-color: #f0f0f0; 
+  padding: 10px; 
+  text-align: center; 
 }
 
-/* Style for category buttons */
+/* Category buttons */
 .category-button {
   background-color: #FFD700;
-  border: none; /* Remove button border */
-  padding: 8px 16px; /* Add padding to buttons */
-  margin: 5px; /* Add margin between buttons */
-  cursor: pointer; /* Add a pointer cursor on hover */
-  transition: background-color 0.3s; /* Add a smooth background color transition */
+  border: none; 
+  padding: 8px 16px; 
+  margin: 5px; 
+  cursor: pointer; 
+  transition: background-color 0.3s; 
 }
 
-/* Style for the active category button */
+
 .category-button.active {
-  background-color: lightgray; /* Set the background color for the active button */
-  color: #fff; /* Set text color to white for the active button */
+  background-color: lightgray; 
+  color: #fff; 
 }
 
-/* Style for category button hover state */
+
 .category-button:hover {
-  background-color: #ccc; /* Light gray background on hover */
+  background-color: #ccc;
 }
 
 .button:hover {
@@ -113,37 +98,5 @@
   transition: transform 0.3s ease-in-out;
 }
 
-/* Create a background color animation */
-@keyframes colorChange {
-  0% {
-    background-color: #FFA500; /* Start color */
-  }
-  100% {
-    background-color: #FF6347; /* End color */
-  }
-}
-
-/* Apply the animation to an element */
-.section {
-  animation: colorChange 3s ease infinite alternate; /* Alternate animation */
-}
-
-/* Slide in from the left */
-.slide-in-left {
-  transform: translateX(-100%);
-  transition: transform 0.5s ease-in-out;
-}
-
-.slide-in-left.active {
-  transform: translateX(0);
-}
-
-/* Add a pulse effect on button click */
-.button:active {
-  transform: scale(0.95);
-  background-color: #FF6347; /* Change color on click */
-}
 
 
-
-  
