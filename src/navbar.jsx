@@ -28,7 +28,7 @@ export const Navbar = () => {
               <a href="/">Favourite</a>
             </li>
             <li>
-              <a href="/">Cart</a>
+            <Link to="/cart">Cart</Link>
             </li>
             <li>
               {isAuthenticated ? (
