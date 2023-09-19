@@ -1,0 +1,77 @@
+/* profile.css */
+
+/* Profile Wrapper */
+.profile-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 80vh;
+    background-color: #f0f0f0; /* Background color for the entire page */
+  }
+  
+  /* Profile Content Container */
+  .profile-content {
+    max-width: 800px;
+    width: 100%;
+    padding: 20px;
+    background-color: #fff; /* Background color for the profile content */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Box shadow for the profile content */
+    border-radius: 10px;
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  /* Profile Details */
+  .profile-details {
+    margin-top: 20px;
+  }
+  
+  .profile-details h2 {
+    font-size: 24px;
+    color: #333; /* Text color for headings */
+  }
+  
+  .profile-details p {
+    font-size: 18px;
+    color: #666; /* Text color for paragraphs */
+    margin-top: 10px;
+  }
+  
+  /* Logout Button */
+  .logout-button {
+    background-color: #ff5733; /* Background color for the logout button */
+    color: #fff; /* Text color for the logout button */
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s ease-in-out;
+  }
+  
+  .logout-button:hover {
+    background-color: #ff2800; /* Background color for the logout button on hover */
+  }
+  
+  /* Login Prompt */
+  .login-prompt {
+    margin-top: 20px;
+  }
+  
+  .login-prompt p {
+    font-size: 18px;
+    color: #666; /* Text color for login prompt */
+  }
+  
+  .login-link {
+    text-decoration: underline;
+    color: #007bff; /* Text color for login link */
+    font-weight: bold;
+    margin-left: 5px;
+  }
+  
+  .login-link:hover {
+    color: #0056b3; /* Text color for login link on hover */
+  }
+  

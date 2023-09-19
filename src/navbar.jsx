@@ -4,11 +4,14 @@ import { Link } from 'react-router-dom';
 import logoImage from "./Logo.png"; 
 
 export const Navbar = () => {
+  // Check if there is a token in localStorage
+  const isAuthenticated = localStorage.getItem('accessToken');
+
   return (
     <div>
       <div id="main-navbar" className="navbar">
         <img src={logoImage} alt="Logo" className="logo" />
-        <h1 style={{ paddingInlineEnd:'20px' }}>ShopSentix</h1>
+        <h1 style={{ paddingInlineEnd: '20px' }}>ShopSentix</h1>
         <div className="search-bar">
           <input
             type="text"
@@ -20,7 +23,7 @@ export const Navbar = () => {
         <nav>
           <ul>
             <li>
-            <Link to="/">Home</Link>
+              <Link to="/">Home</Link>
             </li>
             <li>
               <a href="/">Favourite</a>
@@ -29,7 +32,11 @@ export const Navbar = () => {
               <a href="/">Cart</a>
             </li>
             <li>
-            <Link to="/login">Login | Sign Up</Link>
+              {isAuthenticated ? (
+                <Link to="/profile">Profile</Link>
+              ) : (
+                <Link to="/login">Login | Sign Up</Link>
+              )}
             </li>
           </ul>
         </nav>
