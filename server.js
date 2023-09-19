@@ -26,34 +26,33 @@ function authenticateToken(req, res, next) {
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    return res.sendStatus(401); // Unauthorized
+    return res.sendStatus(401); 
   }
 
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
     if (err) {
-      return res.sendStatus(403); // Forbidden
+      return res.sendStatus(403); 
     }
-    req.user = user; // Attach the user object to the request
+    req.user = user; 
     next();
   });
 }
 
-// Route to retrieve user details based on the access token
+
 app.get('/user-details', authenticateToken, async (req, res) => {
   try {
-    // Access the user object attached to the request
+    
     const { email, username } = req.user;
 
-    // You can fetch additional user details from the database if needed
-    // Example:
+    
     const user = await UserModel.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Respond with user details
-    res.json({ email, username, /* Add other user details here */ });
+  
+    res.json({ email, username,  });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
@@ -105,15 +104,21 @@ app.post(
   }
 );
 
-app.post('/token', (req, res) => {
+app.post('/token', async (req, res) => {
     const refreshToken = req.body.token
     if (refreshToken == null) return res.sendStatus(401)
-    if (!refreshTokens.includes(refreshToken)) return res.sendStatus(403)
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-      if (err) return res.sendStatus(403)
-      const accessToken = generateAccessToken({ name: user.name })
-      res.json({ accessToken: accessToken })
-    })
+
+    try {
+      const user = await UserModel.findOne({ refreshToken });
+      if (!user) return res.sendStatus(403);
+    
+      const accessToken = generateAccessToken({ email: user.email, username: user.username });
+      res.json({ accessToken });
+    } catch (error) {
+      console.error(error);
+      res.sendStatus(403);
+    }
+    
   })
 
   app.delete('/logout', (req, res) => {
@@ -146,10 +151,10 @@ app.post('/login', async (req, res) => {
     const payload = { email: user.email, username: user.username };
     const accessToken = generateAccessToken(payload);
 
-    // Generate and store a refresh token in the database
+   
     const refreshToken = generateRefreshToken(payload);
 
-    // Store the refresh token in the user's document
+   
     user.refreshToken = refreshToken;
     await user.save();
 
@@ -162,11 +167,11 @@ app.post('/login', async (req, res) => {
 
 
 function generateAccessToken(payload) {
-  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
 }
 
 function generateRefreshToken(payload) {
-  return jwt.sign(payload, process.env. REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+  return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
 }
 
 app.listen(4000)

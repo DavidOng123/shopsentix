@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import logoImage from "./Logo.png"; 
 
 export const Navbar = () => {
-  // Check if there is a token in localStorage
   const isAuthenticated = localStorage.getItem('accessToken');
 
   return (
