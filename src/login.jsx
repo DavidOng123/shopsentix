@@ -1,19 +1,28 @@
 import { Navbar } from './navbar';
 import { Footer } from './Footer';
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import "./login.css";
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import './login.css';
 
 export const Login = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: '', 
-    password: '', 
+    email: '',
+    password: '',
   });
 
   const [errors, setErrors] = useState({
     email: '',
-    password: '', 
+    password: '',
   });
+
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem('accessToken');
+    if (isAuthenticated) {
+      navigate('/profile', { replace: true }); 
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,17 +30,17 @@ export const Login = () => {
       ...formData,
       [name]: value,
     });
-    
+
     setErrors({
       ...errors,
       [name]: '',
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     const newErrors = {};
-   
+
     if (formData.email.trim() === '') {
       newErrors.email = 'Email is required';
     } else if (!isValidEmail(formData.email)) {
@@ -43,25 +52,37 @@ export const Login = () => {
     } else if (formData.password.trim().length < 6) {
       newErrors.password = 'Password should be at least 6 characters';
     }
-   
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
     } else {
-     
-      setFormData({
-        email: '',
-        password: '',
-      });
-      
-      setErrors({
-        email: '',
-        password: '',
-      });
+      try {
+        const response = await axios.post('http://localhost:4000/login', formData);
+        const { accessToken, refreshToken } = response.data;
+
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+
+        console.log("Logged in");
+        navigate('/profile', { replace: true })
+      } catch (error) {
+        console.error(error);
+        // Handle login error
+      }
     }
+
+    setFormData({
+      email: '',
+      password: '',
+    });
+
+    setErrors({
+      email: '',
+      password: '',
+    });
   };
 
   const isValidEmail = (email) => {
-   
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
@@ -77,13 +98,13 @@ export const Login = () => {
             <p>Shop the latest trends with confidence</p>
           </header>
           <div className="container">
-            <div class="materialContainer">
+            <div className="materialContainer">
               <br></br>
               <br></br>
               <br></br>
               <div className="box">
                 <div className="title">LOGIN</div>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleLogin}>
                   <div className="form-group">
                     <label htmlFor="email">Email</label>
                     <input
@@ -111,11 +132,11 @@ export const Login = () => {
                   <button type="submit">Login</button>
                 </form>
                 <p>
-                Don't have an account?{' '}
-                <Link to="/register" style={{ color: 'blue', textDecoration: 'underline' }}>
-                  Register
-                </Link>
-              </p>
+                  Don't have an account?{' '}
+                  <Link to="/register" style={{ color: 'blue', textDecoration: 'underline' }}>
+                    Register
+                  </Link>
+                </p>
               </div>
               <br></br>
               <br></br>
@@ -127,4 +148,4 @@ export const Login = () => {
       <Footer />
     </div>
   );
-}
+};
