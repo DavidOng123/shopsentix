@@ -2,7 +2,7 @@ import { Navbar } from './navbar';
 import { Footer } from './Footer';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from './api';
 import './login.css';
 
 export const Login = () => {
@@ -57,7 +57,7 @@ export const Login = () => {
       setErrors(newErrors);
     } else {
       try {
-        const response = await axios.post('http://localhost:4000/login', formData);
+        const response = await api.post('http://localhost:4000/login', formData);
         const { accessToken, refreshToken } = response.data;
 
         localStorage.setItem('accessToken', accessToken);

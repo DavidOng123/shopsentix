@@ -1,7 +1,7 @@
 import { Navbar } from './navbar';
 import { Footer } from './Footer';
 import React, { useState } from 'react';
-import axios from 'axios'; 
+import api from './api';
 import { useNavigate } from 'react-router-dom';
 import './login.css'; 
 
@@ -31,7 +31,7 @@ export const Register = () => {
       ...formData,
       [name]: value,
     });
-    // Clear the error message when the user starts typing
+  
     setErrors({
       ...errors,
       [name]: '',
@@ -41,7 +41,7 @@ export const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate the form fields
+    
     const newErrors = {};
     
     if (formData.username.trim() === '') {
@@ -81,7 +81,7 @@ export const Register = () => {
     } else {
       try {
         const { confirmPassword, ...userData } = formData;
-        await axios.post('http://localhost:4000/register', userData);
+        await api.post('http://localhost:4000/register', userData);
        
         setFormData({
           username: '',
@@ -110,13 +110,11 @@ export const Register = () => {
   };
 
   const isValidEmail = (email) => {
-    // Simple email validation regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
   const isValidPhoneNumber = (phoneNumber) => {
-    // Simple phone number validation regex (10 digits)
     const phoneNumberRegex = /^\d{10}$/;
     return phoneNumberRegex.test(phoneNumber);
   };

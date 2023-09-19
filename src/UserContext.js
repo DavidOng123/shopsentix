@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from './api';
 
 const UserContext = createContext();
 
@@ -19,7 +19,7 @@ export function UserProvider({ children }) {
           return;
         }
 
-        const response = await axios.get('http://localhost:4000/user-details', {
+        const response = await api.get('http://localhost:4000/user-details', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
@@ -31,14 +31,14 @@ export function UserProvider({ children }) {
           const refreshToken = localStorage.getItem('refreshToken');
           if (refreshToken) {
             try {
-              const refreshResponse = await axios.post('http://localhost:4000/token', {
+              const refreshResponse = await api.post('http://localhost:4000/token', {
                 token: refreshToken,
               });
 
               const newAccessToken = refreshResponse.data.accessToken;
               localStorage.setItem('accessToken', newAccessToken);
 
-              const retryResponse = await axios.get('http://localhost:4000/user-details', {
+              const retryResponse = await api.get('http://localhost:4000/user-details', {
                 headers: {
                   Authorization: `Bearer ${newAccessToken}`,
                 },
