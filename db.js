@@ -30,15 +30,31 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   refreshToken: {
-    type: String, // Store the refresh token as a string
+    type: String, 
   },
+  resetToken: {
+    type:String,
+  },
+  resetTokenExpiration:{
+    type:Date,
+  } ,
+});
+
+const productSchema = new mongoose.Schema({
+  name: String,
+  price: Number,
+  description: String,
+  category: String,
+  attributes: [String],
+  file_name: String, 
 });
 
 
 const UserModel = mongoose.model('User', userSchema);
+const ProductModel = mongoose.model('Product', productSchema);
 
 
 module.exports = {
   UserModel,
-  
+  ProductModel,
 };
