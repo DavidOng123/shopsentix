@@ -42,18 +42,40 @@ export function AuthProvider({ children }) {
   
 
   useEffect(() => {
-    
-    if (accessToken) {
-      const tokenExpiration = localStorage.getItem('tokenExpiration');
-      const currentTime = Date.now() / 1000; 
-
-      if (tokenExpiration && currentTime > tokenExpiration) {
-        refreshAccessToken(); 
-      } else {
-        setIsAuthenticated(true);
+    const fetchData = async () => {
+      try {
+        if (accessToken) {
+          const tokenExpiration = localStorage.getItem('tokenExpiration');
+          const currentTime = Date.now() / 1000;
+  
+          if (tokenExpiration && currentTime > tokenExpiration) {
+            await refreshAccessToken();
+          }
+  
+          const response = await axios.get('http://localhost:4000/user-details', {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+  
+          const user = response.data;
+          setUser(user);
+          setIsAuthenticated(true);
+          
+    console.log('isAuthenticated:', isAuthenticated);
+    console.log('user:', user);
+        }
+      } catch (error) {
+        console.error('Error fetching user details:', error);
+        // Handle the error, e.g., by redirecting to the login page
       }
-    }
-  }, [accessToken, refreshAccessToken]); 
+    };
+  
+    fetchData();
+  }, [accessToken, refreshAccessToken]);
+  
+
+
 
   async function login(email, password) {
     try {
@@ -67,6 +89,10 @@ export function AuthProvider({ children }) {
       setRefreshToken(refreshToken);
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
+      const expirationDurationInSeconds = 2 * 60 * 60; 
+const tokenExpiration = Math.floor(Date.now() / 1000) + expirationDurationInSeconds;
+
+localStorage.setItem('tokenExpiration', tokenExpiration);
       
       const userDetailsResponse = await axios.get('http://localhost:4000/user-details', {
         headers: {

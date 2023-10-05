@@ -11,7 +11,6 @@ export const Profile = () => {
   const [tokenRefreshed, setTokenRefreshed] = useState(false);
 
   useEffect(() => {
-    
     if (!isAuthenticated) {
       navigate('/login');
     } else {
@@ -31,15 +30,13 @@ export const Profile = () => {
     }
   }, [isAuthenticated, navigate, refreshAccessToken]);
 
-  
-
   return (
     <div>
       <Navbar />
       <div className='profile-wrapper'>
         <div className='profile-content'>
           <div>
-            {user || isAuthenticated? (
+            {isAuthenticated ? (
               <div className='profile-details'>
                 <h2>Welcome to your profile page, {user?.username}</h2>
                 <p>Email: {user?.email}</p>

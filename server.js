@@ -20,8 +20,9 @@ app.use(cookieParser());
 app.use(express.json())
 app.use(helmet());
 app.use(bodyParser.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(cors());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 const { UserModel , ProductModel} = require('./db');
 
@@ -58,7 +59,7 @@ function authenticateToken(req, res, next) {
     return res.sendStatus(401); 
   }
 
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET, (err, user) => {
     if (err) {
       return res.sendStatus(403); 
     }
@@ -373,7 +374,7 @@ try {
 
 
 function generateAccessToken(payload) {
-  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '2m' });
+  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10m' });
 }
 
 function generateRefreshToken(payload) {
