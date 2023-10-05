@@ -1,0 +1,22 @@
+.admin-header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+  }
+  
+  .admin-header nav {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .admin-header nav a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 20px;
+  }
+  
+  .admin-header nav a:hover {
+    text-decoration: underline;
+  }
+  

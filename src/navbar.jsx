@@ -2,9 +2,10 @@ import React from "react";
 import "./navbarstyle.css";
 import { Link } from 'react-router-dom';
 import logoImage from "./Logo.png"; 
+import { useAuth } from './auth';
 
 export const Navbar = () => {
-  const isAuthenticated = localStorage.getItem('accessToken');
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <div>
