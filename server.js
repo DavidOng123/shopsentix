@@ -15,13 +15,27 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  credentials: true, 
+};
+
+app.use(cors(corsOptions));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Add CORS headers to allow cross-origin requests
+app.use('/uploads', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3000'); // Replace with the URL of your frontend
+  res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
 
 app.use(cookieParser());
 app.use(express.json())
 app.use(helmet());
 app.use(bodyParser.json());
-app.use(cors());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 
 const { UserModel , ProductModel} = require('./db');
@@ -63,31 +77,23 @@ function authenticateToken(req, res, next) {
     if (err) {
       return res.sendStatus(403); 
     }
+
     req.user = user; 
     next();
   });
 }
 
-
-app.get('/user-details', authenticateToken, async (req, res) => {
+app.get('/user-details', authenticateToken, (req, res) => {
   try {
-    
     const { email, username } = req.user;
 
-    
-    const user = await UserModel.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-  
-    res.json({ email, username,  });
+    res.json({ email, username });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 app.post(
   '/register',
