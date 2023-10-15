@@ -1,0 +1,102 @@
+/* productDetail.css */
+
+.product-details-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .product-details-content {
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .product-image {
+    margin-right: 20px;
+  }
+  
+  .product-image img {
+    max-width: 100%;
+    max-height: 100%;
+  }
+  
+  .product-info {
+    flex: 1;
+  }
+  
+  .product-name {
+    font-size: 24px;
+    margin: 0;
+  }
+  
+  .product-price {
+    font-size: 18px;
+    margin: 5px 0;
+  }
+  
+  .product-description {
+    font-size: 16px;
+  }
+  
+  .product-reviews {
+    /* Add your review section styles here */
+  }
+  
+  /* Add to Cart dialog styles */
+  .cart-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    text-align: center;
+  }
+  
+  .cart-dialog h2 {
+    font-size: 20px;
+  }
+  
+  .cart-dialog p {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+  .cart-dialog input {
+    width: 60px;
+    padding: 5px;
+    margin-right: 10px;
+    font-size: 14px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .cart-dialog button {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px;
+  }
+  
+  .cart-dialog button:first-child {
+    background: #ccc;
+  }
+
+  .product-details-content button{
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    padding: 10px 20px; 
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }

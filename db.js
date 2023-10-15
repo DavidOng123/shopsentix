@@ -49,7 +49,17 @@ const productSchema = new mongoose.Schema({
   file_name: String, 
 });
 
+const cartItemSchema = new mongoose.Schema({
+  product: String,
+  quantity: Number,
+});
 
+const cartSchema = new mongoose.Schema({
+  user: String,
+  items: [cartItemSchema], // An array of cart items
+});
+
+const CartModel = mongoose.model('Cart', cartSchema);
 const UserModel = mongoose.model('User', userSchema);
 const ProductModel = mongoose.model('Product', productSchema);
 
@@ -57,4 +67,5 @@ const ProductModel = mongoose.model('Product', productSchema);
 module.exports = {
   UserModel,
   ProductModel,
+  CartModel
 };
