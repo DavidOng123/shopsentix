@@ -1,3 +1,13 @@
+POST http://localhost:5000/predict_sentiment
+Content-Type: application/json
+
+{
+  "text": "hello"
+}
+
+GET http://localhost:5000
+
+
 GET http://localhost:4000/user-details
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImRhdmlkQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF2aWQiLCJpYXQiOjE2OTYzNDMzMjcsImV4cCI6MTY5NjM0MzkyN30.UiznSqB1Q5suVuonqZTzm6HUGerASUtZwqI-2xb0Xck
 ###

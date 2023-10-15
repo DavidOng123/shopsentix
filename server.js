@@ -38,7 +38,7 @@ app.use(bodyParser.json());
 
 
 
-const { UserModel , ProductModel} = require('./db');
+const { UserModel , ProductModel, CartModel} = require('./db');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -85,9 +85,11 @@ function authenticateToken(req, res, next) {
 
 app.get('/user-details', authenticateToken, (req, res) => {
   try {
-    const { email, username } = req.user;
+    const { id,email, username } = req.user;
 
-    res.json({ email, username });
+    
+
+    res.json({ id,email, username });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
@@ -148,7 +150,7 @@ app.post('/token', async (req, res) => {
       const user = await UserModel.findOne({ refreshToken });
       if (!user) return res.sendStatus(403);
     
-      const accessToken = generateAccessToken({ email: user.email, username: user.username });
+      const accessToken = generateAccessToken({ id:user._id,email: user.email, username: user.username });
       res.json({ accessToken });
     } catch (error) {
       console.error(error);
@@ -184,7 +186,7 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    const payload = { email: user.email, username: user.username };
+    const payload = {id:user._id, email: user.email, username: user.username };
     const accessToken = generateAccessToken(payload);
 
    
@@ -378,6 +380,60 @@ try {
 }
 });
 
+app.post('/add-to-cart', authenticateToken, async (req, res) => {
+  try {
+    const { productId, quantity } = req.body;
+    const userId = req.user._id;
+    const parsedQuantity = parseInt(quantity);
+
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+      return res.status(400).json({ message: 'Invalid quantity' });
+    }
+
+    // Check if the user already has a cart
+    let userCart = await CartModel.findOne({ user: userId });
+
+    if (!userCart) {
+      // If the user doesn't have a cart, create a new one
+      userCart = new CartModel({
+        user: userId,
+        items: [{ product: productId, quantity: parsedQuantity }],
+      });
+    } else {
+      // If the user already has a cart, add the item or update its quantity
+      const existingItem = userCart.items.find((item) => item.product === productId);
+
+      if (existingItem) {
+        // Update the quantity if the product is already in the cart
+        existingItem.quantity += parsedQuantity;
+      } else {
+        // Add the product to the cart if it's not already there
+        userCart.items.push({ product: productId, quantity: parsedQuantity });
+      }
+    }
+
+    // Save the cart to the database
+    await userCart.save();
+
+    res.status(200).json({ message: 'Product added to the cart' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to add the product to the cart' });
+  }
+});
+
+app.get('/get-cart', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const userCart = await CartModel.findOne({ user: userId }).populate('items.product');
+
+    res.json(userCart);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 function generateAccessToken(payload) {
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10m' });
