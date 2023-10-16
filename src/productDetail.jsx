@@ -50,6 +50,7 @@ export const ProductDetail = () => {
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
+          
           productId: productId,
           quantity: quantity,
         }),

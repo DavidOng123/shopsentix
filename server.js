@@ -383,7 +383,7 @@ try {
 app.post('/add-to-cart', authenticateToken, async (req, res) => {
   try {
     const { productId, quantity } = req.body;
-    const userId = req.user._id;
+    const userId = req.user.id;
     const parsedQuantity = parseInt(quantity);
 
     if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
@@ -422,9 +422,51 @@ app.post('/add-to-cart', authenticateToken, async (req, res) => {
   }
 });
 
+app.post('/update-cart', authenticateToken, async (req, res) => {
+  try {
+    const { productId, quantity } = req.body;
+    const userId = req.user.id;
+    const parsedQuantity = parseInt(quantity);
+
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+      return res.status(400).json({ message: 'Invalid quantity' });
+    }
+
+    // Check if the user already has a cart
+    let userCart = await CartModel.findOne({ user: userId });
+
+    if (!userCart) {
+      // If the user doesn't have a cart, create a new one
+      userCart = new CartModel({
+        user: userId,
+        items: [{ product: productId, quantity: parsedQuantity }],
+      });
+    } else {
+      // If the user already has a cart, add the item or update its quantity
+      const existingItem = userCart.items.find((item) => item.product === productId);
+
+      if (existingItem) {
+        // Update the quantity if the product is already in the cart
+        existingItem.quantity = parsedQuantity;
+      } else {
+        // Add the product to the cart if it's not already there
+        userCart.items.push({ product: productId, quantity: parsedQuantity });
+      }
+    }
+
+    // Save the cart to the database
+    await userCart.save();
+
+    res.status(200).json({ message: 'Product added to the cart' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to add the product to the cart' });
+  }
+});
+
 app.get('/get-cart', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
 
     const userCart = await CartModel.findOne({ user: userId }).populate('items.product');
 
@@ -434,6 +476,8 @@ app.get('/get-cart', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+
 
 function generateAccessToken(payload) {
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10m' });

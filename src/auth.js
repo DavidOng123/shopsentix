@@ -49,7 +49,7 @@ export function AuthProvider({ children }) {
           const currentTime = Date.now() / 1000;
   
           if (tokenExpiration && currentTime > tokenExpiration) {
-            await refreshAccessToken();
+            await refreshAccessToken().then(()=>{console.log('Token updated')});
           }
   
           const response = await axios.get('http://localhost:4000/user-details', {
