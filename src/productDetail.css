@@ -1,9 +1,8 @@
-/* productDetail.css */
-
 .product-details-container {
+  min-height: 100vh;
+    position: relative;
     display: flex;
     justify-content: center;
-    align-items: center;
     margin-top: 20px;
   }
   
@@ -40,10 +39,8 @@
   }
   
   .product-reviews {
-    /* Add your review section styles here */
   }
   
-  /* Add to Cart dialog styles */
   .cart-dialog {
     position: fixed;
     top: 50%;

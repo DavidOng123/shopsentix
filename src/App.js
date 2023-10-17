@@ -9,6 +9,7 @@ import { Register } from './register';
 import { Profile } from './profile';
 import { Cart } from './cart';
 import { ProductDetail } from './productDetail';
+import { Product } from './product';
 import { ResetPassword } from './ResetPassword';
 import { AdminDashboard } from './admin/adminDashboard';
 import { ProductManagement } from './admin/productManagement';
@@ -56,6 +57,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path='/product' element={<Product />} />
           <Route path='/product/:id' element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path='/resetpassword' element={<ResetPassword />} />

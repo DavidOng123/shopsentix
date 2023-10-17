@@ -1,6 +1,12 @@
 /* cart.css */
 
+.cart-page{
+  min-height: 100vh;
+  position: relative;
+}
+
 .cart-page h1 {
+  
   font-size: 36px;
   background-color: #FFA500;
   color: white;
@@ -27,6 +33,7 @@
 }
 
 .cart-container {
+  
   display: flex;
   flex-direction: column;
   min-height: 100vh; 

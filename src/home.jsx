@@ -16,6 +16,33 @@ export const Home = () => {
   const [filteredProducts, setFilteredProducts] = useState([]); 
   const [tokenRefreshed, setTokenRefreshed] = useState(false);
 
+ 
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    } else {
+      const tokenExpiration = localStorage.getItem('tokenExpiration');
+      const currentTime = Date.now() / 1000;
+console.log('Token Expiration (Before Refresh):', tokenExpiration);
+
+      if (tokenExpiration && currentTime > tokenExpiration) {
+        refreshAccessToken()
+          .then(() => {
+            console.log('token refreshed');
+          })
+          .catch((error) => {
+            console.error('Token refresh failed:', error);
+            navigate('/login');
+          });
+      }
+      console.log('Authorized user')
+      
+console.log('Token Expiration (After Refresh):', localStorage.getItem('tokenExpiration'));
+    }
+    fetchProducts();
+  }, [isAuthenticated, navigate, refreshAccessToken]);
+
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
 
@@ -26,27 +53,6 @@ export const Home = () => {
       setFilteredProducts(filtered);
     }
   };
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    } else {
-      const tokenExpiration = localStorage.getItem('tokenExpiration');
-      const currentTime = Date.now() / 1000;
-
-      if (tokenExpiration && currentTime > tokenExpiration) {
-        refreshAccessToken()
-          .then(() => {
-            setTokenRefreshed(true);
-          })
-          .catch((error) => {
-            console.error('Token refresh failed:', error);
-            navigate('/login');
-          });
-      }
-    }
-    fetchProducts();
-  }, [isAuthenticated, navigate, refreshAccessToken]);
 
   const fetchProducts = async (category) => {
     try {
@@ -68,6 +74,7 @@ export const Home = () => {
   return (
     <div className='wrapper'>
       <Navbar />
+      
       <div className='content-container'>
         <div className='content'>
           <div className="carousel-container">
