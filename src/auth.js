@@ -20,6 +20,7 @@ export function AuthProvider({ children }) {
       });
   
       const newAccessToken = response.data.accessToken;
+      console.log('New Access Token:', newAccessToken);
       setAccessToken(newAccessToken);
       localStorage.setItem('accessToken', newAccessToken);
   

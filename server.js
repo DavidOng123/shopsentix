@@ -480,7 +480,7 @@ app.get('/get-cart', authenticateToken, async (req, res) => {
 
 
 function generateAccessToken(payload) {
-  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10m' });
+  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
 }
 
 function generateRefreshToken(payload) {

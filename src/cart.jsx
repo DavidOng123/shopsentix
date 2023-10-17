@@ -5,6 +5,7 @@ import { Footer } from './Footer';
 import { useAuth } from './auth';
 import './cart.css';
 
+
 export const Cart = () => {
   const navigate = useNavigate();
   const [cart, setCart] = useState(null);
