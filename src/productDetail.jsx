@@ -7,12 +7,13 @@ import './productDetail.css';
 
 export const ProductDetail = () => {
   const { id } = useParams();
-  const { accessToken,user} = useAuth();
-  console.log(id);
+  const { accessToken, user } = useAuth();
 
   const [product, setProduct] = useState(null);
-  const [quantity, setQuantity] = useState(1); // Initialize quantity to 1
+  const [quantity, setQuantity] = useState(1);
   const [showDialog, setShowDialog] = useState(false);
+  const [selectedAttribute, setSelectedAttribute] = useState(null);
+  const [availableAttributes, setAvailableAttributes] = useState([]);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -21,6 +22,9 @@ export const ProductDetail = () => {
         if (response.ok) {
           const productData = await response.json();
           setProduct(productData);
+
+          setAvailableAttributes(productData.attributes || []);
+          setSelectedAttribute(productData.attributes[0] || null);
         } else {
           console.error('Error fetching product:', response.status);
         }
@@ -33,16 +37,26 @@ export const ProductDetail = () => {
   }, [id]);
 
   const handleAddToCart = () => {
- 
     setShowDialog(true);
-    
   };
 
   const handleConfirmAddToCart = async () => {
+    if (selectedAttribute === null) {
+      alert('Please select an attribute.');
+      return;
+    }
+  
     const userId = user._id;
     const productId = id;
+    const attribute=selectedAttribute
   
     try {
+      console.log('Request Body:', JSON.stringify({
+        productId: productId,
+        quantity: quantity,
+        attribute: attribute,
+      }));
+      
       const response = await fetch('http://localhost:4000/add-to-cart', {
         method: 'POST',
         headers: {
@@ -50,9 +64,9 @@ export const ProductDetail = () => {
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          
           productId: productId,
           quantity: quantity,
+          attribute: selectedAttribute, // Include selectedAttribute
         }),
       });
   
@@ -66,7 +80,6 @@ export const ProductDetail = () => {
     }
   };
   
-
   return (
     <div>
       <Navbar />
@@ -74,12 +87,28 @@ export const ProductDetail = () => {
         {product ? (
           <div className="product-details-content">
             <div className="product-image">
-              <img src={`http://localhost:4000/uploads/${product.file_name}`} alt={product.name} />
+              <img
+                src={`http://localhost:4000/uploads/${product.file_name}`}
+                alt={product.name}
+              />
             </div>
             <div className="product-info">
               <h1 className="product-name">{product.name}</h1>
               <p className="product-price">${product.price.toFixed(2)}</p>
               <p className="product-description">{product.description}</p>
+              <div className="product-attributes">
+                <p>Attributes:</p>
+                <select
+                  value={selectedAttribute}
+                  onChange={(e) => setSelectedAttribute(e.target.value)}
+                >
+                  {availableAttributes.map((attribute) => (
+                    <option key={attribute} value={attribute}>
+                      {attribute}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <button onClick={handleAddToCart}>Add to Cart</button>
             </div>
             <div className="product-reviews">
@@ -90,8 +119,7 @@ export const ProductDetail = () => {
           <p>Loading product details...</p>
         )}
       </div>
-      
-      {/* Quantity selection dialog */}
+
       {showDialog && (
         <div className="cart-dialog">
           <h2>Add to Cart</h2>

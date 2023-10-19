@@ -136,4 +136,12 @@
   }
   
 
-  
+  .add-product-form input[type="number"], /* Style for quantity input field */
+.add-product-form input[type="text"],
+.add-product-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}

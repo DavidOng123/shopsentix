@@ -11,6 +11,7 @@ import { Cart } from './cart';
 import { ProductDetail } from './productDetail';
 import { Product } from './product';
 import { ResetPassword } from './ResetPassword';
+import { Inventory } from './admin/inventory';
 import { AdminDashboard } from './admin/adminDashboard';
 import { ProductManagement } from './admin/productManagement';
 
@@ -62,6 +63,7 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path='/resetpassword' element={<ResetPassword />} />
           <Route path='/admin/adminDashboard' element={<AdminDashboard />} />
+          <Route path='/admin/inventory' element={<Inventory />} />
           <Route path='/admin/productManagement' element={<ProductManagement />} />
         </Routes>
       </AuthProvider>

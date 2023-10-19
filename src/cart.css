@@ -1,8 +1,8 @@
 /* cart.css */
 
 .cart-page{
-  min-height: 100vh;
-  position: relative;
+   min-height: 100vh;
+    position: relative;
 }
 
 .cart-page h1 {
@@ -60,6 +60,7 @@
   flex-direction: column;
 }
 
+
 .remove-button {
   background-color: #FF5733;
   color: #fff;
@@ -68,8 +69,31 @@
   padding: 5px 10px;
   cursor: pointer;
   transition: background-color 0.3s;
-  align-self: flex-end; /* Align to the right side */
+  margin-left: auto; /* Move the button to the right by using margin */
 }
+/* Styles for the overlay (blurred background) */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* Styles for the dialog box */
+.confirmation-dialog {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
 
 
 .remove-button:hover {
@@ -130,4 +154,100 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Styles for the buttons inside the dialog box */
+.confirmation-dialog button {
+  margin: 10px;
+  padding: 10px 20px;
+  background-color: #007bff; /* Change to your desired button background color */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.confirmation-dialog button:hover {
+  background-color: #0056b3; /* Change to a slightly darker shade for hover effect */
+}
+.form-dialog {
+  width: 800px; /* Adjust the width as needed */
+  height: 700px; /* Adjust the height as needed */
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+
+.form-dialog h2 {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: bold;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-top: 5px; /* Add some space at the top of the input field */
+  margin-bottom: 5px; /* Add some space at the bottom of the input field */
+}
+
+
+.form-buttons {
+  display: flex;
+  justify-content: flex-end; /* Place buttons on the right side */
+  margin-top: 10px; /* Add space at the top of the button container */
+}
+
+.back-button,
+.submit-button {
+  flex: 1; /* Make buttons share equal space */
+}
+
+.back-button {
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+  margin-right: 10px; /* Add space between the buttons */
+}
+
+.submit-button {
+  background-color: #2ecc71; /* Example color for the submit button */
+  color: #fff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.back-button:hover {
+  background-color: #2980b9;
+}
+
+.submit-button:hover {
+  background-color: #27ae60; /* Example color change on hover for the submit button */
+}
+
+
 

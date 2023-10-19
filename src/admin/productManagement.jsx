@@ -10,12 +10,12 @@ export const ProductManagement = () => {
     name: '',
     price: '',
     description: '',
-    category: '', // Updated category handling
-    attributes: [],
+    category: '',
+    attributes: [], // Allow custom attributes
     image: null,
+    quantity: '', // New quantity field
   });
-  const [categories, setCategories] = useState(['Clothing', 'Electronic','Accessories']);
-  const [attributes, setAttributes] = useState(['s', 'm']);
+  const [categories, setCategories] = useState(['Clothing', 'Electronic', 'Accessories']);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -31,9 +31,10 @@ export const ProductManagement = () => {
       formData.append('name', newProduct.name);
       formData.append('price', newProduct.price);
       formData.append('description', newProduct.description);
-      formData.append('category', newProduct.category); // Assign category directly
-      formData.append('attributes', JSON.stringify(newProduct.attributes));
+      formData.append('category', newProduct.category);
+      formData.append('attributes', JSON.stringify(newProduct.attributes)); // Store custom attributes
       formData.append('image', newProduct.image);
+      formData.append('quantity', newProduct.quantity); // Include quantity
 
       const response = await axios.post('http://localhost:4000/products', formData, {
         headers: {
@@ -47,9 +48,10 @@ export const ProductManagement = () => {
           name: '',
           price: '',
           description: '',
-          category: '', // Reset category
+          category: '',
           attributes: [],
           image: null,
+          quantity: '', // Reset quantity field
         });
         setSuccessMessage('Product added successfully.');
         setErrorMessage('');
@@ -76,17 +78,18 @@ export const ProductManagement = () => {
         <section className="product-list">
           <h2>Product List</h2>
           <ul>
-          {products.map((product, index) => (
-  <li key={index}>
-    <strong>{product.name}</strong>
-    <p>Price: ${product.price}</p>
-    <p>Description: {product.description}</p>
-    <p>Category: {product.category}</p>
-    <p>Attributes: {Array.isArray(product.attributes) ? product.attributes.join(', ') : ''}</p>
-    <button>Edit</button>
-    <button>Delete</button>
-  </li>
-))}
+            {products.map((product, index) => (
+              <li key={index}>
+                <strong>{product.name}</strong>
+                <p>Price: ${product.price}</p>
+                <p>Description: {product.description}</p>
+                <p>Category: {product.category}</p>
+                <p>Attributes: {Array.isArray(product.attributes) ? product.attributes.join(', ') : ''}</p>
+                <p>Quantity: {product.quantity}</p> {/* Display quantity */}
+                <button>Edit</button>
+                <button>Delete</button>
+              </li>
+            ))}
           </ul>
         </section>
         <section className="add-product">
@@ -124,28 +127,32 @@ export const ProductManagement = () => {
               </select>
             </div>
             <div className="attribute-section">
-              <select
+              <input
+                type="text"
+                placeholder="Custom Attributes (Comma Separated)"
                 value={newProduct.attributes}
-                onChange={(e) => setNewProduct({ ...newProduct, attributes: e.target.value })}
-              >
-                <option value="">Select Attribute</option>
-                {attributes.map((attribute) => (
-                  <option key={attribute} value={attribute}>
-                    {attribute}
-                  </option>
-                ))}
-              </select>
+                onChange={(e) =>
+                  setNewProduct({
+                    ...newProduct,
+                    attributes: e.target.value.split(',').map((attr) => attr.trim()),
+                  })
+                }
+              />
+            </div>
+            <div className="attribute-section">
+              <input
+                type="number"
+                placeholder="Quantity"
+                value={newProduct.quantity}
+                onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
+              />
             </div>
             <label className="file-input-wrapper">
-  <span className="file-input-label">
-    {newProduct.image ? newProduct.image.name : 'Choose an image file'}
-  </span>
-  <input
-    type="file"
-    accept="image/*"
-    onChange={handleImageChange}
-  />
-</label>
+              <span className="file-input-label">
+                {newProduct.image ? newProduct.image.name : 'Choose an image file'}
+              </span>
+              <input type="file" accept="image/*" onChange={handleImageChange} />
+            </label>
             <button onClick={addProduct}>Add Product</button>
             {errorMessage && <p className="error-message">{errorMessage}</p>}
             {successMessage && <p className="success-message">{successMessage}</p>}

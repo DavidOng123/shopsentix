@@ -47,11 +47,13 @@ const productSchema = new mongoose.Schema({
   category: String,
   attributes: [String],
   file_name: String, 
+  quantity:Number
 });
 
 const cartItemSchema = new mongoose.Schema({
   product: String,
   quantity: Number,
+  attribute:String
 });
 
 const cartSchema = new mongoose.Schema({
@@ -59,13 +61,32 @@ const cartSchema = new mongoose.Schema({
   items: [cartItemSchema], // An array of cart items
 });
 
+const orderSchema = new mongoose.Schema({
+  user: String,
+  items: [cartItemSchema], 
+  total: {
+    type: Number,
+    required: true,
+  },
+  orderDate: {
+    type: Date,
+    default: Date.now, // Default to the current date and time
+  },
+  shippingAddress: {
+    type: String,
+    required: true,
+  },
+});
+
 const CartModel = mongoose.model('Cart', cartSchema);
 const UserModel = mongoose.model('User', userSchema);
 const ProductModel = mongoose.model('Product', productSchema);
+const OrderModel = mongoose.model('Order', orderSchema);
 
 
 module.exports = {
   UserModel,
   ProductModel,
-  CartModel
+  CartModel,
+  OrderModel
 };

@@ -19,9 +19,7 @@ export const Home = () => {
  
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    } else {
+  
       const tokenExpiration = localStorage.getItem('tokenExpiration');
       const currentTime = Date.now() / 1000;
 console.log('Token Expiration (Before Refresh):', tokenExpiration);
@@ -39,7 +37,7 @@ console.log('Token Expiration (Before Refresh):', tokenExpiration);
       console.log('Authorized user')
       
 console.log('Token Expiration (After Refresh):', localStorage.getItem('tokenExpiration'));
-    }
+    
     fetchProducts();
   }, [isAuthenticated, navigate, refreshAccessToken]);
 

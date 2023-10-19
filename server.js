@@ -38,7 +38,7 @@ app.use(bodyParser.json());
 
 
 
-const { UserModel , ProductModel, CartModel} = require('./db');
+const { UserModel , ProductModel, CartModel, OrderModel} = require('./db');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -85,11 +85,11 @@ function authenticateToken(req, res, next) {
 
 app.get('/user-details', authenticateToken, (req, res) => {
   try {
-    const { id,email, username } = req.user;
+    const { id,email, username,address } = req.user;
 
     
 
-    res.json({ id,email, username });
+    res.json({ id,email, username, address });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
@@ -186,7 +186,7 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    const payload = {id:user._id, email: user.email, username: user.username };
+    const payload = {id:user._id, email: user.email, username: user.username, address:user.address };
     const accessToken = generateAccessToken(payload);
 
    
@@ -281,20 +281,21 @@ app.post('/products', upload.single('image'), async (req, res) => {
   try {
     console.log('Uploaded file:', req.file);
     const file_name = req.file.filename;
-    const { name, price, description, category, attributes } = req.body;
+    const { name, price, description, category, attributes , quantity} = req.body;
 
     // Parse the attributes value from JSON string to an array
     const parsedAttributes = JSON.parse(attributes);
 
     const newProduct = new ProductModel({
-      name,
-      price,
-      description,
-      category,
+      name:name,
+      price:price,
+      description:description,
+      category:category,
       attributes: parsedAttributes, // Store as an array
-      file_name,
+      file_name:file_name,
+      quantity:quantity
     });
-
+    console.log('new product:'+newProduct)
     await newProduct.save();
 
     res.status(201).json({ message: 'Product created successfully' });
@@ -333,29 +334,22 @@ try {
 }
 });
 
-// Update a product by ID
-app.put('/products/:productId', async (req, res) => {
+
+app.post('/updateQuantity', async (req, res) => {
 try {
-  const { productId } = req.params;
-  const { name, price, description, category, attributes } = req.body;
+  const { productId, quantity} = req.body;
 
-  const updatedProduct = await ProductModel.findByIdAndUpdate(
-    productId,
-    {
-      name,
-      price,
-      description,
-      category,
-      attributes,
-    },
-    { new: true }
-  );
+  const product = await ProductModel.findById(productId);
 
-  if (!updatedProduct) {
-    return res.status(404).json({ message: 'Product not found' });
-  }
+      if (!product) {
+        return res.status(400).json({ error: 'Product not found' });
+      }
 
-  res.json(updatedProduct);
+      product.quantity += quantity;
+      await product.save();
+
+
+  res.json(product);
 } catch (error) {
   console.error(error);
   res.status(500).json({ message: 'Failed to update the product' });
@@ -382,14 +376,20 @@ try {
 
 app.post('/add-to-cart', authenticateToken, async (req, res) => {
   try {
-    const { productId, quantity } = req.body;
+    const { productId, quantity, attribute } = req.body;
     const userId = req.user.id;
     const parsedQuantity = parseInt(quantity);
+    
 
     if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
       return res.status(400).json({ message: 'Invalid quantity' });
     }
-
+    console.log('server Body:', JSON.stringify({
+      productId: productId,
+      quantity: quantity,
+      attribute: attribute,
+    }));
+    
     // Check if the user already has a cart
     let userCart = await CartModel.findOne({ user: userId });
 
@@ -397,7 +397,7 @@ app.post('/add-to-cart', authenticateToken, async (req, res) => {
       // If the user doesn't have a cart, create a new one
       userCart = new CartModel({
         user: userId,
-        items: [{ product: productId, quantity: parsedQuantity }],
+        items: [{ product: productId, quantity: parsedQuantity, attribute: attribute }],
       });
     } else {
       // If the user already has a cart, add the item or update its quantity
@@ -408,7 +408,7 @@ app.post('/add-to-cart', authenticateToken, async (req, res) => {
         existingItem.quantity += parsedQuantity;
       } else {
         // Add the product to the cart if it's not already there
-        userCart.items.push({ product: productId, quantity: parsedQuantity });
+        userCart.items.push({ product: productId, quantity: parsedQuantity, attribute:attribute });
       }
     }
 
@@ -424,7 +424,7 @@ app.post('/add-to-cart', authenticateToken, async (req, res) => {
 
 app.post('/update-cart', authenticateToken, async (req, res) => {
   try {
-    const { productId, quantity } = req.body;
+    const { productId, quantity, attribute } = req.body;
     const userId = req.user.id;
     const parsedQuantity = parseInt(quantity);
 
@@ -439,7 +439,7 @@ app.post('/update-cart', authenticateToken, async (req, res) => {
       // If the user doesn't have a cart, create a new one
       userCart = new CartModel({
         user: userId,
-        items: [{ product: productId, quantity: parsedQuantity }],
+        items: [{ product: productId, quantity: parsedQuantity, attribute:attribute }],
       });
     } else {
       // If the user already has a cart, add the item or update its quantity
@@ -448,9 +448,10 @@ app.post('/update-cart', authenticateToken, async (req, res) => {
       if (existingItem) {
         // Update the quantity if the product is already in the cart
         existingItem.quantity = parsedQuantity;
+        existingItem.attribute=attribute;
       } else {
         // Add the product to the cart if it's not already there
-        userCart.items.push({ product: productId, quantity: parsedQuantity });
+        userCart.items.push({ product: productId, quantity: parsedQuantity , attribute:attribute});
       }
     }
 
@@ -474,6 +475,60 @@ app.get('/get-cart', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.post('/order', async (req, res) => {
+  try {
+    const { user, items, shippingAddress, total } = req.body;
+    console.log('user:'+user+'\nitems:'+items+'\nshippingAddress:'+shippingAddress+'\ntotal:'+total)
+    
+    
+
+    // Create the order
+    const order = new OrderModel({
+      user: user, // Assuming user is already authenticated and you have the user ID available
+      items:items,
+      total:total,
+      shippingAddress:shippingAddress,
+    });
+
+    // Deduct product quantities from the inventory
+    for (const item of items) {
+      const product = await ProductModel.findById(item.product);
+
+      if (!product) {
+        return res.status(400).json({ error: 'Product not found' });
+      }
+
+      if (product.quantity < item.quantity) {
+        return res.status(400).json({ error: 'Not enough product in stock' });
+      }
+
+      product.quantity -= item.quantity;
+      await product.save();
+    }
+
+    // Save the order
+    const savedOrder = await order.save();
+
+    res.json(savedOrder);
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(500).json({ error: 'Failed to create order' });
+  }
+});
+
+app.post('/clear-cart', authenticateToken, async (req, res) => {
+  try {
+   
+    const user = req.user; // Assuming that the authenticated user's information is stored in req.user
+    await CartModel.deleteMany({ user: user.id }); // Clear all cart items for the user
+
+    res.json({ message: 'Cart cleared successfully' });
+  } catch (error) {
+    console.error('Error clearing cart:', error);
+    res.status(500).json({ error: 'Failed to clear cart' });
   }
 });
 

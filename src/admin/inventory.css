@@ -1,0 +1,63 @@
+/* Inventory.css */
+
+.inventory-container {
+    margin: 20px;
+  }
+  
+  .inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .inventory-table th,
+  .inventory-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .update-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    text-align: center;
+  }
+  
+  .update-dialog h2 {
+    margin-top: 0;
+  }
+  
+  .update-dialog label {
+    display: block;
+    margin: 10px 0;
+  }
+  
+  .update-dialog input[type="number"] {
+    width: 100%;
+    padding: 5px;
+  }
+  
+  .update-dialog button {
+    margin: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  
+  .add-button {
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+  }
+  
+  .cancel-button {
+    background-color: #ccc;
+    color: #000;
+    border: none;
+  }
+  
