@@ -38,6 +38,10 @@ const userSchema = new mongoose.Schema({
   resetTokenExpiration:{
     type:Date,
   } ,
+  role:{
+    type:String,
+    required:true
+  }
 });
 
 const productSchema = new mongoose.Schema({

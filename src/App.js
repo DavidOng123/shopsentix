@@ -14,6 +14,7 @@ import { ResetPassword } from './ResetPassword';
 import { Inventory } from './admin/inventory';
 import { AdminDashboard } from './admin/adminDashboard';
 import { ProductManagement } from './admin/productManagement';
+import { EditProduct } from './admin/editProduct';
 
 function App() {
   // Set up axios interceptors for token refresh
@@ -65,6 +66,7 @@ function App() {
           <Route path='/admin/adminDashboard' element={<AdminDashboard />} />
           <Route path='/admin/inventory' element={<Inventory />} />
           <Route path='/admin/productManagement' element={<ProductManagement />} />
+          <Route path='/admin/editProduct/:id' element={<EditProduct />} />
         </Routes>
       </AuthProvider>
     </Router>

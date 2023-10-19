@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminHeader from './adminHeader';
 import AdminFooter from './adminFooter';
+import { useAuth } from '../auth';
 import './inventory.css'; // Create a CSS file for your styling
 
 export const Inventory = () => {
@@ -8,6 +9,9 @@ export const Inventory = () => {
   const [showUpdateDialog, setShowUpdateDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [newQuantity, setNewQuantity] = useState(0);
+  const { user } = useAuth(); 
+  console.log(user)
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
     // Fetch the product data from your server
@@ -64,6 +68,18 @@ export const Inventory = () => {
 
     setShowUpdateDialog(false);
   };
+
+  if (!isAdmin) {
+    return (
+      <div>
+        <AdminHeader />
+        <div className="admin-dashboard-container">
+          <p>You don't have access to this page.</p>
+        </div>
+        <AdminFooter />
+      </div>
+    );
+  }  
 
   return (
     <div>

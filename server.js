@@ -85,11 +85,11 @@ function authenticateToken(req, res, next) {
 
 app.get('/user-details', authenticateToken, (req, res) => {
   try {
-    const { id,email, username,address } = req.user;
+    const { id,email, username,address,role } = req.user;
 
     
 
-    res.json({ id,email, username, address });
+    res.json({ id,email, username, address,role });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
@@ -122,6 +122,7 @@ app.post(
       // Hash and salt the password before storing it
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const role="User"
 
       // Create a new user
       const newUser = new UserModel({
@@ -130,6 +131,7 @@ app.post(
         password: hashedPassword,
         phoneNumber,
         address,
+        role
       });
 
       await newUser.save(); // Save the user to the database
@@ -150,7 +152,7 @@ app.post('/token', async (req, res) => {
       const user = await UserModel.findOne({ refreshToken });
       if (!user) return res.sendStatus(403);
     
-      const accessToken = generateAccessToken({ id:user._id,email: user.email, username: user.username });
+      const accessToken = generateAccessToken({ id:user._id,email: user.email, username: user.username, role:user.role });
       res.json({ accessToken });
     } catch (error) {
       console.error(error);
@@ -186,7 +188,7 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    const payload = {id:user._id, email: user.email, username: user.username, address:user.address };
+    const payload = {id:user._id, email: user.email, username: user.username, address:user.address, role:user.role };
     const accessToken = generateAccessToken(payload);
 
    
@@ -334,6 +336,42 @@ try {
 }
 });
 
+app.post('/products/:productId', async (req, res) => {
+  const productId = req.params.productId;
+  const {
+    name,
+    price,
+    description,
+    category,
+    attributes,
+    quantity
+  } = req.body;
+
+  // Find the product by ID (replace this with your database query)
+  try {
+    const productToUpdate = await ProductModel.findOne({ _id: productId });
+    
+    if (!productToUpdate) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Update the product data
+    productToUpdate.name = name;
+    productToUpdate.price = price;
+    productToUpdate.description = description;
+    productToUpdate.category = category;
+    productToUpdate.attributes = attributes;
+    productToUpdate.quantity = quantity;
+
+    await productToUpdate.save(); // Save the changes to the database
+
+    return res.json({ message: 'Product updated successfully' });
+  } catch (error) {
+    return res.status(500).json({ error: 'An error occurred while updating the product' });
+  }
+});
+
+
 
 app.post('/updateQuantity', async (req, res) => {
 try {
@@ -358,21 +396,35 @@ try {
 
 // Delete a product by ID
 app.delete('/products/:productId', async (req, res) => {
-try {
-  const { productId } = req.params;
+  try {
+    const { productId } = req.params;
 
-  const deletedProduct = await ProductModel.findByIdAndRemove(productId);
+    // Check if the product is in any user's cart
+    const productInCarts = await CartModel.find({ products: productId });
 
-  if (!deletedProduct) {
-    return res.status(404).json({ message: 'Product not found' });
+    if (productInCarts && productInCarts.length > 0) {
+      // The product is in users' carts, so ask for confirmation
+      const confirmDeletion = req.query.confirmDeletion === 'true';
+
+      if (!confirmDeletion) {
+        // Return a message indicating that the product is in users' carts
+        return res.status(400).json({ message: 'Product is in users\' carts. Confirm deletion if necessary.' });
+      }
+    }
+
+    const deletedProduct = await ProductModel.findByIdAndRemove(productId);
+
+    if (!deletedProduct) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to delete the product' });
   }
-
-  res.json({ message: 'Product deleted successfully' });
-} catch (error) {
-  console.error(error);
-  res.status(500).json({ message: 'Failed to delete the product' });
-}
 });
+
 
 app.post('/add-to-cart', authenticateToken, async (req, res) => {
   try {
