@@ -1,0 +1,89 @@
+/* editProduct.css */
+
+/* Styling for the main container */
+.edit-product-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f8f8f8;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    min-height: 100vh;
+    position: relative;
+  }
+  
+  /* Header styles */
+  .edit-product-container header {
+    text-align: center;
+    background-color: #333;
+    color: #fff;
+    padding: 10px 0;
+  }
+  
+  /* Heading styles */
+  .edit-product-container h1 {
+    font-size: 24px;
+  }
+  
+  /* Product details section */
+  .product-details {
+    margin-top: 20px;
+  }
+  
+  /* Label for product details */
+  .product-detail-label {
+    font-weight: bold;
+  }
+  
+  /* Input and select styles */
+  .product-detail-row input,
+  .product-detail-row select {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  /* Custom Attributes input style */
+  .product-detail-row input[type="text"] {
+    width: 100%;
+  }
+  
+  /* Quantity input style */
+  .product-detail-row input[type="number"] {
+    width: 100px;
+  }
+  
+  /* Save and Edit buttons */
+  .product-detail-row button {
+    padding: 10px 20px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  /* ShowImageUpload button */
+  .product-detail-row button:hover {
+    background-color: #555;
+  }
+  
+  /* Styling for the Cancel button */
+  .product-detail-row button[type="cancel"] {
+    background-color: #ccc;
+    color: #000;
+    margin-left: 10px;
+  }
+  
+  /* Center the image */
+  .product-detail-row img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+  }
+  
+  /* Optional: Add additional styling as needed */
+  

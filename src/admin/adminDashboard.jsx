@@ -2,17 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './adminDashboard.css';
 import AdminHeader from './adminHeader'; 
+import { useAuth } from '../auth';
 import AdminFooter from './adminFooter';
 
 export const AdminDashboard = () => {
   const [sentimentData, setSentimentData] = useState([]);
-
+  const { user } = useAuth(); 
+  console.log(user)
+  const isAdmin = user?.role === 'admin';
   useEffect(() => {
     // Fetch sentiment analysis data from your backend and update sentimentData state
     // Example API call: fetchSentimentAnalysisData()
     // Update sentimentData with the response data
   }, []);
 
+  if (!isAdmin) {
+    return (
+      <div>
+        <AdminHeader />
+        <div className="admin-dashboard-container">
+          <p>You don't have access to this page.</p>
+        </div>
+        <AdminFooter />
+      </div>
+    );
+  }   
   return (
     <div>
 <AdminHeader/>
