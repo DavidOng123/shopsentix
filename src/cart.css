@@ -40,37 +40,87 @@
 }
 
 
-
-
 .cart-item {
+  background-color: #f9f9f9; /* Light grey background color */
+  color: #333; /* Text color */
+  padding: 16px; /* Add padding for spacing */
+  border: 1px solid #ddd; /* Add a border for separation */
+  border-radius: 8px; /* Rounded corners */
+  margin: 8px; /* Add margin to separate items */
+  display: flex; /* Arrange content in a row */
+}
+
+.cart-item.low-stock {
+  border: 1px solid #f0ad4e; /* Yellow border */
+  padding: 10px;
+  margin: 10px;
   display: flex;
-  align-items: center;
-  gap: 20px;
+}
+
+/* Style for out of stock items */
+.cart-item.out-of-stock {
+  border: 1px solid #d9534f; /* Red border */
+  padding: 10px;
+  margin: 10px;
+  display: flex;
+}
+
+/* Style for the "Out of Stock" message */
+.out-of-stock-message {
+  color: #d9534f; /* Red text color */
 }
 
 .cart-item img {
-  max-width: 100px;
-  max-height: 100px;
-  object-fit: cover;
+  max-width: 100px; /* Limit the image width */
 }
 
 .item-details {
-  flex: 1; /* Take up all available space */
-  display: flex;
-  flex-direction: column;
+  margin-left: 16px; /* Add space to the left of the item details */
+  flex-grow: 1; /* Allow details to expand and fill available space */
 }
 
+.item-details-header {
+  display: flex;
+  justify-content: space-between; /* Space between name and price */
+  align-items: center; /* Center vertically */
+}
+
+.product-name {
+  font-size: 20px; /* Larger font size for the product name */
+}
+
+.product-price {
+  font-size: 16px; /* Font size for the price */
+}
+
+.item-details-controls {
+  display: flex;
+  justify-content: space-between; /* Space between controls */
+  align-items: center; /* Center vertically */
+  margin-top: 8px; /* Add space below the item details */
+}
+
+.attribute-control,
+.quantity-control {
+  display: flex; /* Arrange controls in a row */
+  align-items: center; /* Center vertically */
+}
+
+.attribute-select,
+.quantity-input {
+  margin-left: 8px; /* Add space between select and input */
+  padding: 4px; /* Add padding to input and select */
+}
 
 .remove-button {
-  background-color: #FF5733;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  padding: 5px 10px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  margin-left: auto; /* Move the button to the right by using margin */
+  background-color: #ff4c4c; /* Red background color for remove button */
+  color: #fff; /* White text color */
+  border: none; /* Remove button border */
+  border-radius: 4px; /* Rounded button corners */
+  padding: 4px 8px; /* Padding for button */
+  cursor: pointer; /* Show hand cursor on hover */
 }
+
 /* Styles for the overlay (blurred background) */
 .overlay {
   position: fixed;
@@ -248,6 +298,41 @@
 .submit-button:hover {
   background-color: #27ae60; /* Example color change on hover for the submit button */
 }
+
+.unavailable-item {
+  background-color: #ccc; /* Light grey background color for unavailable items */
+  color: #333; /* Text color */
+  padding: 16px; /* Add padding for spacing */
+  border: 1px solid #ddd; /* Add a border for separation */
+  border-radius: 8px; /* Rounded corners */
+  margin: 8px; /* Add margin to separate items */
+  display: flex; /* Arrange content in a row */
+}
+
+.unavailable-item img {
+  max-width: 100px; /* Limit the image width */
+}
+
+.item-details {
+  margin-left: 16px; /* Add space to the left of the item details */
+  flex-grow: 1; /* Allow details to expand and fill available space */
+}
+
+.item-details-header {
+  display: flex;
+  justify-content: space-between; /* Space between name and price */
+  align-items: center; /* Center vertically */
+}
+
+.product-name {
+  font-size: 20px; /* Larger font size for the product name */
+}
+
+product-price {
+  font-size: 16px; /* Font size for the price */
+}
+
+
 
 
 

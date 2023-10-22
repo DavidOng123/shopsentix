@@ -69,17 +69,17 @@ export const Inventory = () => {
     setShowUpdateDialog(false);
   };
 
-  if (!isAdmin) {
-    return (
-      <div>
-        <AdminHeader />
-        <div className="admin-dashboard-container">
-          <p>You don't have access to this page.</p>
-        </div>
-        <AdminFooter />
-      </div>
-    );
-  }  
+  // if (!isAdmin) {
+  //   return (
+  //     <div>
+  //       <AdminHeader />
+  //       <div className="admin-dashboard-container">
+  //         <p>You don't have access to this page.</p>
+  //       </div>
+  //       <AdminFooter />
+  //     </div>
+  //   );
+  // }  
 
   return (
     <div>

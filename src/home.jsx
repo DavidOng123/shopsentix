@@ -56,8 +56,9 @@ console.log('Token Expiration (After Refresh):', localStorage.getItem('tokenExpi
     try {
       const response = await fetch(`http://localhost:4000/products`);
       const product = await response.json();
+      
 
-      const data = product.map((product) => ({
+      const data = product.filter((product) => product.available === true).map((product) => ({
         ...product,
         imageUrl: `http://localhost:4000/uploads/${product.file_name}`,
       }));
