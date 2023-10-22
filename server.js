@@ -38,7 +38,7 @@ app.use(bodyParser.json());
 
 
 
-const { UserModel , ProductModel, CartModel, OrderModel} = require('./db');
+const { UserModel , ProductModel, CartModel, OrderModel, ReviewModel} = require('./db');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -85,8 +85,9 @@ function authenticateToken(req, res, next) {
 
 app.get('/user-details', authenticateToken, (req, res) => {
   try {
-    const { id,email, username,address,role } = req.user;
 
+    const { id,email, username,address,role } = req.user;
+console.log("Address:"+address)
     
 
     res.json({ id,email, username, address,role });
@@ -319,6 +320,23 @@ try {
 });
 
 
+app.get('/orders', async (req, res) => {
+  try {
+    const orders = await OrderModel.find();
+
+    // Calculate total sales and total orders
+    const totalSales = orders.reduce((total, order) => total + order.total, 0);
+    const totalOrders = orders.length;
+
+    // Respond with the total sales and total orders
+    res.json({ totalSales, totalOrders });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to fetch orders' });
+  }
+});
+
+
 // Get a single product by ID
 app.get('/products/:productId', async (req, res) => {
 try {
@@ -394,36 +412,47 @@ try {
 }
 });
 
-// Delete a product by ID
 app.delete('/products/:productId', async (req, res) => {
   try {
     const { productId } = req.params;
 
-    // Check if the product is in any user's cart
-    const productInCarts = await CartModel.find({ products: productId });
+    // Step 1: Find the product
+    const product = await ProductModel.findById(productId);
 
-    if (productInCarts && productInCarts.length > 0) {
-      // The product is in users' carts, so ask for confirmation
-      const confirmDeletion = req.query.confirmDeletion === 'true';
-
-      if (!confirmDeletion) {
-        // Return a message indicating that the product is in users' carts
-        return res.status(400).json({ message: 'Product is in users\' carts. Confirm deletion if necessary.' });
-      }
-    }
-
-    const deletedProduct = await ProductModel.findByIdAndRemove(productId);
-
-    if (!deletedProduct) {
+    if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    res.json({ message: 'Product deleted successfully' });
+    // Step 2: Check if the product exists in user carts and orders
+    const usersWithProductInCart = await CartModel.find({ 'items.product': productId });
+    const usersWithProductInOrders = await OrderModel.find({ 'items.product': productId });
+
+    // Step 3: If the product exists in either cart or orders, mark it as unavailable
+    if (usersWithProductInCart.length > 0 || usersWithProductInOrders.length > 0) {
+      product.available = false;
+      await product.save();
+      
+    // Step 5: Update user carts
+    for (const cart of usersWithProductInCart) {
+      // Remove the product from the cart and add it to the itemsUnavailable array
+      cart.items = cart.items.filter(item => item.product.toString() !== productId);
+      cart.itemsUnavailable.push(productId);
+      await cart.save();
+    }
+    } else {
+      // Step 4: If the product doesn't exist in both cart and orders, delete it
+      await product.deleteOne;
+    }
+
+
+    res.json({ message: 'Product deletion and status update complete' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to delete the product' });
   }
 });
+
+
 
 
 app.post('/add-to-cart', authenticateToken, async (req, res) => {
@@ -584,6 +613,115 @@ app.post('/clear-cart', authenticateToken, async (req, res) => {
   }
 });
 
+app.get('/reviews/:productId', async (req, res) => {
+  try {
+    const productId = req.params.productId;
+    const reviews = await ReviewModel.find({ product: productId });
+
+    res.json(reviews);
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    res.status(500).json({ error: 'Error fetching reviews' });
+  }
+});
+
+// Check if a user has purchased a specific product
+app.get('/check-purchase/:id', authenticateToken,async (req, res) => {
+  try {
+    const productId = req.params.id; // Product ID to check
+    const userId = req.user.id; // Assuming user is authenticated and user ID is available
+
+    // Check if the user has purchased the product
+    const hasPurchased = await OrderModel.exists({
+      user: userId,
+      'items.product': productId,
+    });
+
+    res.json({ hasPurchased });
+  } catch (error) {
+    console.error('Error checking purchase:', error);
+    res.status(500).json({ error: 'Error checking purchase' });
+  }
+});
+
+// Post a product review
+app.post('/post-review', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id; // Assuming user is authenticated and user ID is available
+    const { productId, comment } = req.body; // Product ID and review comment
+    console.log("UserID:"+userId+'\nProductId:'+productId+"\ncomment:"+comment)
+
+   
+
+    // Create a new review
+    const review = new ReviewModel({
+      user: userId,
+      product: productId,
+      comment: comment,
+    });
+
+    // Save the review to the database
+    await review.save();
+
+    res.json({ message: 'Review posted successfully' });
+  } catch (error) {
+    console.error('Error posting review:', error);
+    res.status(500).json({ error: 'Error posting review' });
+  }
+});
+
+app.get('/orders/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Use Mongoose to find orders for the specified user
+    const orders = await OrderModel.find({ user: userId });
+
+    // Respond with the orders
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/productSales', async (req, res) => {
+  try {
+    // Aggregate the sales data
+    const productSales = await OrderModel.aggregate([
+      {
+        $unwind: '$items', // Split order items into separate documents
+      },
+      {
+        $group: {
+          _id: '$items.product', // Group by product
+          quantitySold: { $sum: '$items.quantity' }, // Calculate total quantity sold
+        },
+      },
+    ]);
+
+    // Map product _id to productName
+    const productInfoPromises = productSales.map(async (sale) => {
+      const product = await ProductModel.findById(sale._id);
+      if (product) {
+        sale.productName = product.name;
+        delete sale._id; // Remove the _id field
+      }
+      return sale;
+    });
+
+    // Wait for all product info requests to complete
+    const productSalesWithNames = await Promise.all(productInfoPromises);
+
+    // Respond with the product sales data including product names
+    res.json(productSalesWithNames);
+    
+    console.log(productSalesWithNames);
+  } catch (error) {
+    console.error('Error fetching product sales:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 
 function generateAccessToken(payload) {

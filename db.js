@@ -51,7 +51,8 @@ const productSchema = new mongoose.Schema({
   category: String,
   attributes: [String],
   file_name: String, 
-  quantity:Number
+  quantity:Number,
+  available: { type: Boolean, default: true },
 });
 
 const cartItemSchema = new mongoose.Schema({
@@ -63,6 +64,7 @@ const cartItemSchema = new mongoose.Schema({
 const cartSchema = new mongoose.Schema({
   user: String,
   items: [cartItemSchema], // An array of cart items
+  itemsUnavailable: [String],
 });
 
 const orderSchema = new mongoose.Schema({
@@ -82,15 +84,23 @@ const orderSchema = new mongoose.Schema({
   },
 });
 
+const reviewSchema = new mongoose.Schema({
+  product: String, 
+  user: String, 
+  comment: String,
+});
+
 const CartModel = mongoose.model('Cart', cartSchema);
 const UserModel = mongoose.model('User', userSchema);
 const ProductModel = mongoose.model('Product', productSchema);
 const OrderModel = mongoose.model('Order', orderSchema);
+const ReviewModel=mongoose.model('Review', reviewSchema)
 
 
 module.exports = {
   UserModel,
   ProductModel,
   CartModel,
-  OrderModel
+  OrderModel,
+  ReviewModel
 };

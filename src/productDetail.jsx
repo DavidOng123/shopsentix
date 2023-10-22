@@ -7,13 +7,19 @@ import './productDetail.css';
 
 export const ProductDetail = () => {
   const { id } = useParams();
-  const { accessToken, user } = useAuth();
+  const { user } = useAuth();
+  const accessToken=localStorage.getItem('accessToken')
 
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [showDialog, setShowDialog] = useState(false);
   const [selectedAttribute, setSelectedAttribute] = useState(null);
   const [availableAttributes, setAvailableAttributes] = useState([]);
+  const [availableQuantity, setAvailableQuantity] = useState(0);
+  const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+  const [hasPurchased, setHasPurchased] = useState(false); // Track if the user has purchased the product
+  const [comment, setComment] = useState(''); 
 
   useEffect(() => {
     async function fetchProduct() {
@@ -25,6 +31,11 @@ export const ProductDetail = () => {
 
           setAvailableAttributes(productData.attributes || []);
           setSelectedAttribute(productData.attributes[0] || null);
+
+          // Calculate available quantity (if available)
+          setAvailableQuantity(
+            productData.quantity > 0 ? productData.quantity : 0
+          );
         } else {
           console.error('Error fetching product:', response.status);
         }
@@ -32,9 +43,43 @@ export const ProductDetail = () => {
         console.error('Error fetching product:', error);
       }
     }
+    
+
+    async function checkIfPurchased() {
+      try {
+        // You need to implement an API endpoint to check if the user has purchased the product
+        const response = await fetch(`http://localhost:4000/check-purchase/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+        if (response.ok) {
+          setHasPurchased(true);
+        }
+      } catch (error) {
+        console.error('Error checking purchase:', error);
+      }
+    }
 
     fetchProduct();
-  }, [id]);
+    fetchReviews();
+    checkIfPurchased();
+  }, [id, accessToken]);
+
+  async function fetchReviews() {
+    try {
+      const response = await fetch(`http://localhost:4000/reviews/${id}`);
+      if (response.ok) {
+        const reviewsData = await response.json();
+        setReviews(reviewsData);
+        setLoadingReviews(false);
+      } else {
+        console.error('Error fetching reviews:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  }
 
   const handleAddToCart = () => {
     setShowDialog(true);
@@ -45,18 +90,22 @@ export const ProductDetail = () => {
       alert('Please select an attribute.');
       return;
     }
-  
-    const userId = user._id;
+
+    if (quantity <= 0) {
+      alert('Please select a quantity greater than 0.');
+      return;
+    }
+
+    if (quantity > availableQuantity) {
+      alert(`Only ${availableQuantity} left in stock.`);
+      return;
+    }
+
+    const userId = user.id;
     const productId = id;
-    const attribute=selectedAttribute
-  
+    const attribute = selectedAttribute;
+
     try {
-      console.log('Request Body:', JSON.stringify({
-        productId: productId,
-        quantity: quantity,
-        attribute: attribute,
-      }));
-      
       const response = await fetch('http://localhost:4000/add-to-cart', {
         method: 'POST',
         headers: {
@@ -66,12 +115,13 @@ export const ProductDetail = () => {
         body: JSON.stringify({
           productId: productId,
           quantity: quantity,
-          attribute: selectedAttribute, // Include selectedAttribute
+          attribute: selectedAttribute,
         }),
       });
-  
+
       if (response.ok) {
         setShowDialog(false);
+        setHasPurchased(true); // Set to true after successful purchase
       } else {
         console.error('Error adding item to the cart:', response.status);
       }
@@ -79,61 +129,143 @@ export const ProductDetail = () => {
       console.error('Error adding item to the cart:', error);
     }
   };
-  
+
+  const handlePostReview =async () => {
+    // You need to implement an API endpoint to post a review
+    if (!hasPurchased) {
+      alert('You must purchase the product to leave a review');
+      return;
+    }
+    try {
+      const response = await fetch('http://localhost:4000/post-review', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          productId: id,
+          comment: comment,
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh reviews after posting a new review
+        fetchReviews();
+        console.log("Review posted successfully.")
+        setComment('')
+      } else {
+        console.error('Error posting review:', response.status);
+      }
+    } catch (error) {
+      console.error('Error posting review:', error);
+    }
+  };
+
   return (
-    <div>
+    <div className="product-detail-page">
       <Navbar />
+
       <div className="product-details-container">
-        {product ? (
-          <div className="product-details-content">
-            <div className="product-image">
-              <img
-                src={`http://localhost:4000/uploads/${product.file_name}`}
-                alt={product.name}
-              />
-            </div>
-            <div className="product-info">
-              <h1 className="product-name">{product.name}</h1>
-              <p className="product-price">${product.price.toFixed(2)}</p>
-              <p className="product-description">{product.description}</p>
-              <div className="product-attributes">
-                <p>Attributes:</p>
-                <select
-                  value={selectedAttribute}
-                  onChange={(e) => setSelectedAttribute(e.target.value)}
-                >
-                  {availableAttributes.map((attribute) => (
-                    <option key={attribute} value={attribute}>
-                      {attribute}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button onClick={handleAddToCart}>Add to Cart</button>
-            </div>
-            <div className="product-reviews">
-              {/* Add review section here */}
-            </div>
-          </div>
+  {product ? (
+    <div className="product-details-content">
+      <div className="product-column product-image-column">
+        <img
+          src={`http://localhost:4000/uploads/${product.file_name}`}
+          alt={product.name}
+        />
+      </div>
+      <div className="product-column product-details-column">
+        <h1 className="product-name">{product.name}</h1>
+        <p className="product-price">${product.price.toFixed(2)}</p>
+        <p className="product-description">{product.description}</p>
+        <div className="product-attributes">
+          <p>Attributes:</p>
+          <select
+            value={selectedAttribute}
+            onChange={(e) => setSelectedAttribute(e.target.value)}
+          >
+            {availableAttributes.map((attribute) => (
+              <option key={attribute} value={attribute}>
+                {attribute}
+              </option>
+            ))}
+          </select>
+        </div>
+        {availableQuantity > 0 && availableQuantity <= 3 && (
+          <p className="stock-info">{`Only ${availableQuantity} left in stock.`}</p>
+        )}
+        <button className="add-to-cart-button" onClick={handleAddToCart}>
+          Add to Cart
+        </button>
+      </div>
+    </div>
+  ) : (
+    <p className="loading-message">Loading product details...</p>
+  )}
+</div>
+
+
+      <div className="product-reviews-container">
+        <h3 className="reviews-title">Product Reviews</h3>
+        {loadingReviews ? (
+          <p className="loading-message">Loading reviews...</p>
+        ) : reviews.length > 0 ? (
+          <ul className="review-list">
+            {reviews.map((review, index) => (
+              <li key={index} className="review-item">
+                <span className="review-user">
+                  {review.user}:
+                </span>
+                <span className="review-comment">
+                  {review.comment}
+                </span>
+              </li>
+            ))}
+          </ul>
         ) : (
-          <p>Loading product details...</p>
+          <p className="no-reviews-message">
+            Currently, there are no reviews for this product.
+          </p>
         )}
       </div>
 
-      {showDialog && (
-        <div className="cart-dialog">
-          <h2>Add to Cart</h2>
-          <p>Quantity:</p>
+      {/* Display comment form only if the user has purchased the product */}
+      {hasPurchased && (
+        <div className="comment-form-container">
+          <h3 className="comment-title">Post a Review</h3>
+          <input
+            type="text"
+            placeholder="Write your review here..."
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
+          <button className="submit-review-button" onClick={handlePostReview}>
+            Submit Review
+          </button>
+        </div>
+      )}
+
+{showDialog && (
+      <div className="cart-dialog-overlay">
+        <div className="cart-dialog-container">
+          <h2 className="cart-title">Add to Cart</h2>
+          <p className="quantity-label">Quantity:</p>
           <input
             type="number"
             min="1"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
           />
-          <button onClick={() => setShowDialog(false)}>Cancel</button>
-          <button onClick={() => handleConfirmAddToCart()}>Add to Cart</button>
+          <button className="cancel-button" onClick={() => setShowDialog(false)}>
+            Cancel
+          </button>
+          <button className="add-to-cart-button" onClick={handleConfirmAddToCart}>
+            Add to Cart
+          </button>
         </div>
-      )}
+      </div>
+    )}
 
       <Footer />
     </div>

@@ -1,32 +1,104 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './adminDashboard.css';
 import AdminHeader from './adminHeader'; 
 import { useAuth } from '../auth';
 import AdminFooter from './adminFooter';
+import Chart from 'chart.js/auto';
 
 export const AdminDashboard = () => {
+  const [totalSales, setTotalSales] = useState(0);
+  const [totalOrders, setTotalOrders] = useState(0);
   const [sentimentData, setSentimentData] = useState([]);
+  
+  const [productSalesData, setProductSalesData] = useState([]);
   const { user } = useAuth(); 
+
+
   console.log(user)
   const isAdmin = user?.role === 'admin';
   useEffect(() => {
-    // Fetch sentiment analysis data from your backend and update sentimentData state
-    // Example API call: fetchSentimentAnalysisData()
-    // Update sentimentData with the response data
+    fetch('http://localhost:4000/orders')
+      .then((response) => response.json())
+      .then((data) => {
+        // Assuming the API response has a structure like { totalSales: 10000, totalOrders: 100 }
+        setTotalSales(data.totalSales);
+        setTotalOrders(data.totalOrders);
+      })
+      .catch((error) => {
+        console.error('Failed to fetch total sales and orders:', error);
+      });
+
+      fetch('http://localhost:4000/productSales')
+      .then((response) => response.json())
+      .then((data) => {
+        setProductSalesData(data);
+        console.log("Product sales:"+data)
+      })
+      .catch((error) => {
+        console.error('Failed to fetch product sales data:', error);
+      });
   }, []);
 
-  if (!isAdmin) {
-    return (
-      <div>
-        <AdminHeader />
-        <div className="admin-dashboard-container">
-          <p>You don't have access to this page.</p>
-        </div>
-        <AdminFooter />
-      </div>
-    );
-  }   
+  const chartRef = useRef(null);
+
+  useEffect(() => {
+    if (productSalesData.length === 0) return;
+
+    if (chartRef.current) {
+      chartRef.current.destroy();
+    }
+
+    const ctx = document.getElementById('productSalesChart').getContext('2d');
+
+    const newChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: productSalesData.map((item) => item.productName),
+        datasets: [
+          {
+            label: 'Quantity Sold',
+            data: productSalesData.map((item) => item.quantitySold),
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Quantity Sold',
+            },
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Product Name',
+            },
+          },
+        },
+      },
+    });
+
+    chartRef.current = newChart;
+  }, [productSalesData]);
+
+
+  // if (!isAdmin) {
+  //   return (
+  //     <div>
+  //       <AdminHeader />
+  //       <div className="admin-dashboard-container">
+  //         <p>You don't have access to this page.</p>
+  //       </div>
+  //       <AdminFooter />
+  //     </div>
+  //   );
+  // }   
   return (
     <div>
 <AdminHeader/>
@@ -39,11 +111,11 @@ export const AdminDashboard = () => {
       <section className="dashboard-stats">
         <div className="stat-box">
           <h2>Total Sales</h2>
-          <p>$10,000</p>
+          <p>${totalSales.toFixed(2)}</p>
         </div>
         <div className="stat-box">
           <h2>Total Orders</h2>
-          <p>100</p>
+          <p>{totalOrders}</p>
         </div>
         <div className="stat-box">
           <h2>Total Customers</h2>
@@ -65,20 +137,14 @@ export const AdminDashboard = () => {
           </ul>
         )}
       </section>
+      <div className="sentiment-analysis">
+      <h2>Sales Report</h2>
+        <canvas id="productSalesChart"></canvas>
+      </div>
 
-      {/* Function Buttons */}
-      <section className="function-buttons">
-        <Link to="/admin/productManagement">Manage Products</Link>
-        <Link to="/admin/orders">Manage Orders</Link>
-        <Link to="/admin/customers">Manage Customers</Link>
-        <Link to="/admin/inventory">Inventory Management</Link>
-        <Link to="/admin/promotions">Promotions & Discounts</Link>
-        <Link to="/admin/reports">Reporting & Analytics</Link>
-        <Link to="/admin/content">Content Management</Link>
-        <Link to="/admin/settings">Settings</Link>
-      </section>
       
     </div>
+
     <AdminFooter/>
     </div>
   );
