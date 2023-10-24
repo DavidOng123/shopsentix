@@ -96,7 +96,27 @@
     margin-top: 20px;
   }
   
-  
+  /* Style for the select element */
+.product-select {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #333;
+}
+
+/* Style for the select options */
+.product-select option {
+  font-size: 16px;
+}
+
+/* Style for the select when an option is selected */
+.product-select:focus {
+  border: 2px solid #007BFF; /* Change the border color when focused */
+}
+
   
   /* Responsive adjustments */
   @media (max-width: 768px) {

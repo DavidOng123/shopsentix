@@ -26,7 +26,7 @@ def clean_text(text):
 def predict_sentiment():
     try:
 
-        text = 'I love this shirt'
+        text = 'abc'
         print(f"Received text: {text}")
         cleaned_text = clean_text(text)
 

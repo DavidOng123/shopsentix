@@ -10,8 +10,9 @@ export const AdminDashboard = () => {
   const [totalSales, setTotalSales] = useState(0);
   const [totalOrders, setTotalOrders] = useState(0);
   const [sentimentData, setSentimentData] = useState([]);
-  
   const [productSalesData, setProductSalesData] = useState([]);
+  const [uniqueProductNames, setUniqueProductNames] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(''); 
   const { user } = useAuth(); 
 
 
@@ -21,7 +22,6 @@ export const AdminDashboard = () => {
     fetch('http://localhost:4000/orders')
       .then((response) => response.json())
       .then((data) => {
-        // Assuming the API response has a structure like { totalSales: 10000, totalOrders: 100 }
         setTotalSales(data.totalSales);
         setTotalOrders(data.totalOrders);
       })
@@ -38,7 +38,91 @@ export const AdminDashboard = () => {
       .catch((error) => {
         console.error('Failed to fetch product sales data:', error);
       });
+
+      fetch('http://localhost:4000/uniqueProductNames')
+      .then((response) => response.json())
+      .then((data) => {
+        setUniqueProductNames(data);
+      })
+      .catch((error) => {
+        console.error('Failed to fetch unique product names:', error);
+      });
   }, []);
+
+
+  
+
+
+  const handleProductChange = async (event) => {
+    const name = event.target.value;
+  
+    try {
+      const response = await fetch(`http://localhost:4000/getProductIdByName/${name}`);
+      const data = await response.json();
+  
+      const productId = data.productId;
+      console.log("Product ID by Name: " + productId);
+  
+      const reviewsResponse = await fetch(`http://localhost:4000/reviews/${productId}`);
+      const reviewsData = await reviewsResponse.json();
+  
+      const commentsArray = reviewsData.map((review) => review.comment);
+      console.log("Comments Array: ", commentsArray);
+
+      const requestBody = {
+        reviews: commentsArray,
+      };
+      
+      fetch('http://127.0.0.1:5000/predict_sentiments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          const sentimentData = data;
+
+          // Prepare data for the pie chart
+          const labels = ['Positive', 'Negative', 'Neutral'];
+          const backgroundColors = ['green', 'red', 'gray']; // Define your colors
+          const dataValues = [sentimentData.positive, sentimentData.negative, sentimentData.neutral];
+  
+          // Get the chart canvas element
+          const ctx = document.getElementById('sentimentPieChart').getContext('2d');
+  
+          // Create the pie chart
+          new Chart(ctx, {
+            type: 'pie',
+            data: {
+              labels,
+              datasets: [
+                {
+                  data: dataValues,
+                  backgroundColor: backgroundColors,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+            },
+          });
+        })
+        .catch((error) => {
+          console.error('Failed to call sentiment analysis API:', error);
+        });
+      
+      
+
+
+  
+    } catch (error) {
+      console.error('Failed to fetch product ID or reviews:', error);
+    }
+  };
+  
 
   const chartRef = useRef(null);
 
@@ -122,21 +206,23 @@ export const AdminDashboard = () => {
           <p>500</p>
         </div>
       </section>
-      <section className="sentiment-analysis">
-        <h2>Sentiment Analysis</h2>
-        {sentimentData.length === 0 ? (
-          <p>Loading sentiment analysis data...</p>
-        ) : (
-          <ul>
-            {sentimentData.map((item, index) => (
-              <li key={index}>
-                <strong>Product: {item.productName}</strong>
-                <p>Sentiment: {item.sentiment}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+        <section className="sentiment-analysis">
+          <h2>Sentiment Analysis</h2>
+          <div>
+            <label>Select a Product: </label>
+            <select value={selectedProduct} onChange={handleProductChange} className="product-select">
+  <option value="">Select a product</option>
+  {uniqueProductNames.map((productName) => (
+    <option key={productName} value={productName}>
+      {productName}
+    </option>
+  ))}
+</select>
+
+          </div>
+          <div className="sentiment-analysis">
+          <canvas id="sentimentPieChart"></canvas></div>
+        </section>
       <div className="sentiment-analysis">
       <h2>Sales Report</h2>
         <canvas id="productSalesChart"></canvas>
