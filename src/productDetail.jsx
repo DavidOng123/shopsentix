@@ -20,6 +20,7 @@ export const ProductDetail = () => {
   const [loadingReviews, setLoadingReviews] = useState(true);
   const [hasPurchased, setHasPurchased] = useState(false); // Track if the user has purchased the product
   const [comment, setComment] = useState(''); 
+  const [guestCart, setGuestCart] = useState([]);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -90,45 +91,73 @@ export const ProductDetail = () => {
       alert('Please select an attribute.');
       return;
     }
-
+  
     if (quantity <= 0) {
       alert('Please select a quantity greater than 0.');
       return;
     }
-
+  
     if (quantity > availableQuantity) {
       alert(`Only ${availableQuantity} left in stock.`);
       return;
     }
-
-    const userId = user.id;
-    const productId = id;
-    const attribute = selectedAttribute;
-
-    try {
-      const response = await fetch('http://localhost:4000/add-to-cart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          productId: productId,
-          quantity: quantity,
-          attribute: selectedAttribute,
-        }),
-      });
-
-      if (response.ok) {
-        setShowDialog(false);
-        setHasPurchased(true); // Set to true after successful purchase
-      } else {
-        console.error('Error adding item to the cart:', response.status);
+  
+    if (user) {
+      // If the user is logged in, add the product to the database
+      const userId = user.id;
+      const productId = id;
+      const attribute = selectedAttribute;
+  
+      try {
+        const response = await fetch('http://localhost:4000/add-to-cart', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            productId: productId,
+            quantity: quantity,
+            attribute: selectedAttribute,
+          }),
+        });
+  
+        if (response.ok) {
+          setShowDialog(false);
+          setHasPurchased(true); // Set to true after successful purchase
+        } else {
+          console.error('Error adding item to the cart:', response.status);
+        }
+      } catch (error) {
+        console.error('Error adding item to the cart:', error);
       }
-    } catch (error) {
-      console.error('Error adding item to the cart:', error);
+    } else {
+      const existingGuestCart = JSON.parse(localStorage.getItem('guestCart')) || { items: [] };
+
+      const item = {
+        productId: id,
+        quantity: quantity,
+        attribute: selectedAttribute,
+      };
+  
+      const existingItemIndex = existingGuestCart.items.findIndex(
+        (item) => item.productId === id && item.attribute === selectedAttribute
+      );
+  
+      if (existingItemIndex !== -1) {
+        // If the product already exists, update the quantity
+        existingGuestCart.items[existingItemIndex].quantity += quantity;
+      } else {
+        // If it's a new product, add it to the guest cart
+        existingGuestCart.items.push(item);
+      }
+  
+      localStorage.setItem('guestCart', JSON.stringify(existingGuestCart));
+      console.log(existingGuestCart);
+      setShowDialog(false);
     }
   };
+  
 
   const handlePostReview =async () => {
     // You need to implement an API endpoint to post a review

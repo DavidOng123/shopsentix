@@ -625,6 +625,24 @@ app.get('/reviews/:productId', async (req, res) => {
   }
 });
 
+app.get('/uniqueProductNames', async (req, res) => {
+  try {
+    // Retrieve unique product IDs from the Order table
+    const orderProductIds = await OrderModel.distinct('items.product');
+
+    // Fetch product names based on the unique product IDs
+    const uniqueProductNames = await ProductModel.find({
+      _id: { $in: orderProductIds },
+    }).distinct('name');
+
+    res.json(uniqueProductNames);
+  } catch (error) {
+    console.error('Error fetching unique product names:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 // Check if a user has purchased a specific product
 app.get('/check-purchase/:id', authenticateToken,async (req, res) => {
   try {
@@ -723,6 +741,23 @@ app.get('/productSales', async (req, res) => {
   }
 });
 
+app.get('/getProductIdByName/:name', async (req, res) => {
+  const productName = req.params.name; // Get product name from query parameter
+
+  try {
+    const product = await ProductModel.findOne({ name: productName });
+
+    if (product) {
+      // If the product is found, return its ID
+      res.json({ productId: product._id });
+    } else {
+      res.status(404).json({ error: 'Product not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching product by name:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 function generateAccessToken(payload) {
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });

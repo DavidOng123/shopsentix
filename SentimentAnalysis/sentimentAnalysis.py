@@ -4,10 +4,12 @@ import string
 from nltk.corpus import stopwords
 import nltk
 import joblib
+from numpy.core.defchararray import lower
 
 nltk.download('stopwords')
 
 app = Flask(__name__)
+CORS(app)
 
 # Load the trained model and vectorizer
 trained_model = joblib.load('sentiment_model.joblib')
@@ -22,47 +24,34 @@ def clean_text(text):
     cleaned_text = ' '.join(words)
     return cleaned_text
 
-def predict_sentiment():
-    try:
-        data = request.json
-        text = data['text']
-        print(f"Received text: {text}")
-        cleaned_text = clean_text(text)
+def analyze_sentiments(reviews):
+    sentiments = {'positive': 0, 'neutral': 0, 'negative': 0}
 
-        # Vectorize the text data using the pre-trained vectorizer
+    for review in reviews:
+        cleaned_text = clean_text(review)
         text_tfidf = trained_vectorizer.transform([cleaned_text])
-
-        # Make predictions using the pre-trained model
         sentiment = trained_model.predict(text_tfidf)[0]
 
-        return jsonify({'sentiment': sentiment})
-    except Exception as e:
-        return jsonify({'error': str(e)})
+        if lower(sentiment) == 'positive':
+            sentiments['positive'] += 1
+        elif lower(sentiment) == 'neutral':
+            sentiments['neutral'] += 1
+        else:
+            sentiments['negative'] += 1
 
+    return sentiments
 
-def get_sales_data():
-    pass
-
-def get_sentiment_data():
-    pass
-
-
-@app.route('/sales_and_sentiment_data', methods=['GET'])
-def get_sales_and_sentiment_data():
+@app.route('/predict_sentiments', methods=['POST'])
+def predict_sentiments():
     try:
-        # Retrieve sales data from the Order Schema
-        sales_data = get_sales_data()
+        data = request.json
+        reviews = data['reviews']
 
-        # Retrieve sentiment data from the Review Schema
-        sentiment_data = get_sentiment_data()
+        sentiment_counts = analyze_sentiments(reviews)
 
-        # Combine the sales and sentiment data
-        combined_data = combine_data(sales_data, sentiment_data)
-
-        return jsonify(combined_data)
+        return jsonify(sentiment_counts)
     except Exception as e:
         return jsonify({'error': str(e)})
-
 
 if __name__ == '__main__':
     app.run(port=5000)

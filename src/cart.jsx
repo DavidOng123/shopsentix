@@ -23,99 +23,30 @@ export const Cart = () => {
     return item.details && item.details.quantity === 0;
   };
 
-  useEffect(() => {
+  useEffect( () => {
     if (!isAuthenticated) {
-      navigate('/login');
-    } else {
-      const tokenExpiration = localStorage.getItem('tokenExpiration');
-      const currentTime = Date.now() / 1000;
+      const guestCartData = JSON.parse(localStorage.getItem('guestCart'))
+      console.log('guestCartData:', guestCartData);
+      
 
-      if (tokenExpiration && currentTime > tokenExpiration) {
-        refreshAccessToken()
-          .then(() => {
-            setTokenRefreshed(true);
-          })
-          .catch((error) => {
-            console.error('Token refresh failed:', error);
-            navigate('/login');
-          });
-      }
-    }
-
-    async function fetchCart() {
-      try {
-        const response = await fetch('http://localhost:4000/get-cart', {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-        if (response.ok) {
-          const cartData = await response.json();
-
-          if (cartData && cartData.items) {
-            const productIds = cartData.items.map((item) => item.product);
-            const deletedProductId = cartData.itemsUnavailable;
-
-            const fetchUnavailableProductDetails = async (productId) => {
-              try {
-                const productResponse = await fetch(`http://localhost:4000/products/${productId}`, {
-                  method: 'GET',
-                  headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                  },
-                });
-            
-                if (productResponse.ok) {
-                  return productResponse.json();
-                }
-                return null;
-              } catch (error) {
-                console.error('Error fetching product details:', error);
-                return null;
-              }
-            };
-            
-            const populateUnavailableItems = async () => {
-              const unavailableItemDetails = await Promise.all(
-                deletedProductId.map((productId) => fetchUnavailableProductDetails(productId))
-              );
-            
-              const populatedUnavailableItems = unavailableItemDetails
-                .filter((item) => item !== null)
-                .map((item, index) => ({
-                  details: item,
-                  imageUrl: `http://localhost:4000/uploads/${item.file_name}`,
-                  // You can add other properties as needed.
-                }));
-            
-              return populatedUnavailableItems;
-            };
-            
-            populateUnavailableItems().then((unavailableItems) => {
-              console.log('Unavailable item details:', unavailableItems);
-              // You can use unavailableItems as needed, e.g., to display them in your component.
-              setUnavailableItem(unavailableItems);
-            });
-            
+      async function fetchGuestCart() {
+        if (guestCartData && guestCartData.items){
+          const productIds = guestCartData.items.map((item) => item.productId);
+          console.log("productIds:"+productIds)
             const productDetails = await Promise.all(
               productIds.map(async (productId) => {
                 const productResponse = await fetch(`http://localhost:4000/products/${productId}`, {
                   method: 'GET',
-                  headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                  },
                 });
-
+      
                 if (productResponse.ok) {
                   return productResponse.json();
                 }
                 return null;
               })
             );
-
-            const populatedCart = cartData.items.map((item, index) => {
+      
+            const populatedCart = guestCartData.items.map((item, index) => {
               const productDetail = productDetails[index];
               if (productDetail) {
                 const updatedItem = {
@@ -132,25 +63,140 @@ export const Cart = () => {
               }
               return null;
             });
-
-            setCart({ items: populatedCart.filter((item) => item !== null) });
-          }
-        } else {
-          console.error('Error fetching cart:', response.status);
+            
+        setCart({ items: populatedCart.filter((item) => item !== null), itemsUnavailable: [] });
         }
-      } catch (error) {
-        console.error('Error fetching cart:', error);
+        
+  
+      }
+      fetchGuestCart()
+
+    } else {
+      const tokenExpiration = localStorage.getItem('tokenExpiration');
+      const currentTime = Date.now() / 1000;
+
+      if (tokenExpiration && currentTime > tokenExpiration) {
+        refreshAccessToken()
+          .then(() => {
+            setTokenRefreshed(true);
+          })
+          .catch((error) => {
+            console.error('Token refresh failed:', error);
+            navigate('/login');
+          });
+      }
+      async function fetchCart() {
+        try {
+          const response = await fetch('http://localhost:4000/get-cart', {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+  
+          if (response.ok) {
+            const cartData = await response.json();
+  
+            if (cartData && cartData.items) {
+              const productIds = cartData.items.map((item) => item.product);
+              const deletedProductId = cartData.itemsUnavailable;
+  
+              const fetchUnavailableProductDetails = async (productId) => {
+                try {
+                  const productResponse = await fetch(`http://localhost:4000/products/${productId}`, {
+                    method: 'GET',
+                    headers: {
+                      Authorization: `Bearer ${accessToken}`,
+                    },
+                  });
+              
+                  if (productResponse.ok) {
+                    return productResponse.json();
+                  }
+                  return null;
+                } catch (error) {
+                  console.error('Error fetching product details:', error);
+                  return null;
+                }
+              };
+              
+              const populateUnavailableItems = async () => {
+                const unavailableItemDetails = await Promise.all(
+                  deletedProductId.map((productId) => fetchUnavailableProductDetails(productId))
+                );
+              
+                const populatedUnavailableItems = unavailableItemDetails
+                  .filter((item) => item !== null)
+                  .map((item, index) => ({
+                    details: item,
+                    imageUrl: `http://localhost:4000/uploads/${item.file_name}`,
+                    // You can add other properties as needed.
+                  }));
+              
+                return populatedUnavailableItems;
+              };
+              
+              populateUnavailableItems().then((unavailableItems) => {
+                console.log('Unavailable item details:', unavailableItems);
+                // You can use unavailableItems as needed, e.g., to display them in your component.
+                setUnavailableItem(unavailableItems);
+              });
+              
+              const productDetails = await Promise.all(
+                productIds.map(async (productId) => {
+                  const productResponse = await fetch(`http://localhost:4000/products/${productId}`, {
+                    method: 'GET',
+                    headers: {
+                      Authorization: `Bearer ${accessToken}`,
+                    },
+                  });
+  
+                  if (productResponse.ok) {
+                    return productResponse.json();
+                  }
+                  return null;
+                })
+              );
+  
+              const populatedCart = cartData.items.map((item, index) => {
+                const productDetail = productDetails[index];
+                if (productDetail) {
+                  const updatedItem = {
+                    ...item,
+                    details: productDetail,
+                    imageUrl: `http://localhost:4000/uploads/${productDetail.file_name}`,
+                  };
+              
+                  if (isProductOutOfStock(updatedItem)) {
+                    updatedItem.outOfStock = true;
+                  }
+              
+                  return updatedItem;
+                }
+                return null;
+              });
+  
+              setCart({ items: populatedCart.filter((item) => item !== null) });
+            }
+          } else {
+            console.error('Error fetching cart:', response.status);
+          }
+        } catch (error) {
+          console.error('Error fetching cart:', error);
+        }
+      }
+    
+      fetchCart()
+      if (isAuthenticated && user) {
+        setFormData({
+          name: user.username || '',
+          email: user.email || '',
+          address: user.address || '',
+        });
       }
     }
-  
-    fetchCart()
-    if (isAuthenticated && user) {
-      setFormData({
-        name: user.username || '',
-        email: user.email || '',
-        address: user.address || '',
-      });
-    }
+
+   
   }, [isAuthenticated, navigate, refreshAccessToken]);
 
   const handleQuantityChange = async (index, newQuantity) => {
