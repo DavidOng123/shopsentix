@@ -102,7 +102,7 @@ print(train_df)
 
 # Vectorize the text data using TF-IDF
 
-tfidf_vectorizer = TfidfVectorizer(stop_words="english",max_features=8000)  # You can adjust the number of features as needed
+tfidf_vectorizer = TfidfVectorizer(stop_words="english",max_features=20000)  # You can adjust the number of features as needed
 X_train_tfidf = tfidf_vectorizer.fit_transform(train_df['Sentence'])
 y_train = train_df['Sentiment']
 

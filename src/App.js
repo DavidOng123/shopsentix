@@ -10,6 +10,7 @@ import { Profile } from './profile';
 import { Cart } from './cart';
 import { ProductDetail } from './productDetail';
 import { Product } from './product';
+import { Favorite } from './favorite';
 import { ResetPassword } from './ResetPassword';
 import { Inventory } from './admin/inventory';
 import { AdminDashboard } from './admin/adminDashboard';
@@ -62,6 +63,7 @@ function App() {
           <Route path='/product' element={<Product />} />
           <Route path='/product/:id' element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/favorite" element={<Favorite />} />
           <Route path='/resetpassword' element={<ResetPassword />} />
           <Route path='/admin/adminDashboard' element={<AdminDashboard />} />
           <Route path='/admin/inventory' element={<Inventory />} />

@@ -38,7 +38,7 @@ app.use(bodyParser.json());
 
 
 
-const { UserModel , ProductModel, CartModel, OrderModel, ReviewModel} = require('./db');
+const { UserModel , ProductModel, CartModel, OrderModel, ReviewModel, FavoriteModel} = require('./db');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -86,11 +86,11 @@ function authenticateToken(req, res, next) {
 app.get('/user-details', authenticateToken, (req, res) => {
   try {
 
-    const { id,email, username,address,role } = req.user;
+    const { id,email, username,address,role,phone } = req.user;
 console.log("Address:"+address)
     
 
-    res.json({ id,email, username, address,role });
+    res.json({ id,email, username, address,role,phone });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
@@ -189,7 +189,7 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    const payload = {id:user._id, email: user.email, username: user.username, address:user.address, role:user.role };
+    const payload = {id:user._id, email: user.email, phone: user.phoneNumber, username: user.username, address:user.address, role:user.role };
     const accessToken = generateAccessToken(payload);
 
    
@@ -559,9 +559,43 @@ app.get('/get-cart', authenticateToken, async (req, res) => {
   }
 });
 
+app.post('/remove-from-cart',authenticateToken, async (req, res) => {
+  const { productId, attribute } = req.body;
+  const userId = req.user.id;
+
+
+  try {
+    // Find the user's cart based on their user ID
+    const userCart = await CartModel.findOne({ user: userId });
+
+    if (!userCart) {
+      return res.status(404).json({ error: 'User cart not found' });
+    }
+
+    // Find the index of the item in the user's cart
+    const itemIndex = userCart.items.findIndex((item) => {
+      return item.product === productId && item.attribute === attribute;
+    });
+
+    if (itemIndex !== -1) {
+      // Remove the item from the user's cart
+      userCart.items.splice(itemIndex, 1);
+
+      // Save the updated user cart
+      await userCart.save();
+
+      return res.status(200).json({ message: 'Item removed from the cart' });
+    } else {
+      return res.status(404).json({ error: 'Item not found in the cart' });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.post('/order', async (req, res) => {
   try {
-    const { user, items, shippingAddress, total } = req.body;
+    const { user, items, shippingAddress, total, isGuest } = req.body;
     console.log('user:'+user+'\nitems:'+items+'\nshippingAddress:'+shippingAddress+'\ntotal:'+total)
     
     
@@ -572,6 +606,7 @@ app.post('/order', async (req, res) => {
       items:items,
       total:total,
       shippingAddress:shippingAddress,
+      isGuest:isGuest
     });
 
     // Deduct product quantities from the inventory
@@ -758,6 +793,196 @@ app.get('/getProductIdByName/:name', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+app.get('/most-popular-product', async (req, res) => {
+  try {
+    const orders = await OrderModel.find();
+    
+    // Create a map to count the number of purchases for each product
+    const productCountMap = new Map();
+
+    // Count the purchases for each product
+    orders.forEach((order) => {
+      order.items.forEach((item) => {
+        const productId = item.product.toString();
+        if (productCountMap.has(productId)) {
+          productCountMap.set(productId, productCountMap.get(productId) + item.quantity);
+        } else {
+          productCountMap.set(productId, item.quantity);
+        }
+      });
+    });
+
+    // Find the product with the most purchases
+    let mostPopularProductId = null;
+    let mostPopularProductCount = 0;
+
+    for (const [productId, count] of productCountMap) {
+      if (count > mostPopularProductCount) {
+        mostPopularProductId = productId;
+        mostPopularProductCount = count;
+      }
+    }
+
+    if (!mostPopularProductId) {
+      return res.status(404).json({ message: 'No popular product found' });
+    }
+
+    const mostPopularProduct = await ProductModel.findById(mostPopularProductId);
+    
+    res.json(mostPopularProduct);
+  } catch (error) {
+    console.error('Error fetching most popular product:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/suggested-product', async (req, res) => {
+  try {
+    const orders = await OrderModel.find();
+    
+    // Create a map to count the number of purchases for each product
+    const productCountMap = new Map();
+
+    // Count the purchases for each product
+    orders.forEach((order) => {
+      order.items.forEach((item) => {
+        const productId = item.product.toString();
+        if (productCountMap.has(productId)) {
+          productCountMap.set(productId, productCountMap.get(productId) + item.quantity);
+        } else {
+          productCountMap.set(productId, item.quantity);
+        }
+      });
+    });
+
+    // Find the products that have no purchases and are available
+    const productsWithNoPurchases = [];
+    const allProducts = await ProductModel.find();
+
+    allProducts.forEach((product) => {
+      const productId = product._id.toString();
+      if (!productCountMap.has(productId) && product.available) {
+        productsWithNoPurchases.push(product);
+      }
+    });
+
+    if (productsWithNoPurchases.length > 0) {
+      // If there are available products with no purchases, suggest one randomly
+      const randomProductIndex = Math.floor(Math.random() * productsWithNoPurchases.length);
+      const suggestedProduct = productsWithNoPurchases[randomProductIndex];
+      return res.json(suggestedProduct);
+    } else {
+      // If all available products have been purchased, return a random available product
+      const availableProducts = allProducts.filter(product => product.available);
+      if (availableProducts.length > 0) {
+        const randomProductIndex = Math.floor(Math.random() * availableProducts.length);
+        const suggestedProduct = availableProducts[randomProductIndex];
+        return res.json(suggestedProduct);
+      } else {
+        // If there are no available products, return an empty response or an appropriate message
+        return res.json({});
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching suggested product:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/top-rated-product', async (req, res) => {
+  try {
+    // Fetch all products
+    const products = await ProductModel.find();
+
+    let topRatedProduct = null;
+    let topRating = -1;
+
+    for (const product of products) {
+      const productId = product._id.toString();
+
+      // Fetch reviews for the product
+      const reviews = await ReviewModel.find({ product: productId });
+
+      if (reviews.length > 0) {
+        const commentsArray = reviews.map((review) => review.comment);
+        
+        // Perform sentiment analysis here and get the sentiment scores
+        const requestBody = {
+          reviews: commentsArray,
+        };
+
+        const sentimentResponse = await fetch('http://127.0.0.1:5000/predict_sentiments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        const sentimentData = await sentimentResponse.json();
+
+        const positiveSentiments = sentimentData.positive;
+
+        if (positiveSentiments > topRating) {
+          topRatedProduct = product;
+          topRating = positiveSentiments;
+        }
+      }
+    }
+
+    if (!topRatedProduct) {
+      return res.status(404).json({ message: 'No top-rated product found' });
+    }
+
+    res.json(topRatedProduct);
+  } catch (error) {
+    console.error('Error fetching top-rated product:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+app.post('/add-to-favorites', authenticateToken, async (req, res) => {
+ 
+  if (!req.user) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { productId } = req.body;
+  const userId = req.user.id;
+
+  const favorite = new FavoriteModel({
+    user: userId,
+    product: productId,
+  });
+  await favorite.save();
+
+  return res.status(200).json({ message: 'Added to favorites successfully' });
+});
+
+app.get('/favorites', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const userId = req.user.id;
+    const userFavorites = await FavoriteModel.find({ user: userId });
+
+    const productIds = userFavorites.map((favorite) => favorite.product);
+
+    const favoriteProducts = await ProductModel.find({ _id: { $in: productIds } });
+
+    res.status(200).json(favoriteProducts);
+  } catch (error) {
+    console.error('Error fetching favorites:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
 
 function generateAccessToken(payload) {
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });

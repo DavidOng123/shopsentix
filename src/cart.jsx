@@ -6,6 +6,7 @@ import { useAuth } from './auth';
 import './cart.css';
 
 export const Cart = () => {
+  
   const navigate = useNavigate();
   const [cart, setCart] = useState(null);
   const [unavailableItem, setUnavailableItem] = useState(null);
@@ -31,7 +32,7 @@ export const Cart = () => {
 
       async function fetchGuestCart() {
         if (guestCartData && guestCartData.items){
-          const productIds = guestCartData.items.map((item) => item.productId);
+          const productIds = guestCartData.items.map((item) => item.product);
           console.log("productIds:"+productIds)
             const productDetails = await Promise.all(
               productIds.map(async (productId) => {
@@ -50,7 +51,7 @@ export const Cart = () => {
               const productDetail = productDetails[index];
               if (productDetail) {
                 const updatedItem = {
-                  ...item,
+                  ...item,  
                   details: productDetail,
                   imageUrl: `http://localhost:4000/uploads/${productDetail.file_name}`,
                 };
@@ -187,16 +188,17 @@ export const Cart = () => {
       }
     
       fetchCart()
-      if (isAuthenticated && user) {
-        setFormData({
-          name: user.username || '',
-          email: user.email || '',
-          address: user.address || '',
-        });
-      }
+      
     }
 
-   
+    if (isAuthenticated && user) {
+      setFormData({
+        name: user.username || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+      });
+    }
   }, [isAuthenticated, navigate, refreshAccessToken]);
 
   const handleQuantityChange = async (index, newQuantity) => {
@@ -249,39 +251,55 @@ export const Cart = () => {
     }
   };
 
-  const handleRemoveItem = async (index) => {
-    const removedItem = cart.items[index];
-    
-    if (removedItem.quantity > 0) {
-      // User can only remove items with a quantity greater than 0
-      const updatedCart = [...cart.items];
-      updatedCart.splice(index, 1);
-      setCart({ items: updatedCart });
+const handleRemoveItem = async (index) => {
+  const removedItem = cart.items[index];
 
-      // Send a request to remove the item from the server-side cart
-      try {
-        const response = await fetch('http://localhost:4000/remove-from-cart', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            productId: removedItem.product,
-            attribute: removedItem.attribute,
-          }),
-        });
+  if (isAuthenticated) {
+    // Remove the item from the server-side cart for authenticated users
+    try {
+      const response = await fetch('http://localhost:4000/remove-from-cart', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: removedItem.product,
+          attribute: removedItem.attribute,
+        }),
+      });
 
-        if (response.ok) {
-          // Handle successful response
-        } else {
-          console.error('Error removing item from the cart:', response.status);
-        }
-      } catch (error) {
-        console.error('Error removing item from the cart:', error);
+      if (response.ok) {
+        // If the server successfully removed the item, update the cart in the state
+        const updatedCart = [...cart.items];
+        updatedCart.splice(index, 1);
+        setCart({ items: updatedCart });
+      } else {
+        console.error('Error removing item from the cart:', response.status);
+        // Handle the error (e.g., display an error message to the user)
       }
+    } catch (error) {
+      console.error('Error removing item from the cart:', error);
+      // Handle the error (e.g., display an error message to the user)
     }
-  };
+  } else {
+   // Remove the item from the local storage for guest users
+const updatedGuestCart = { ...JSON.parse(localStorage.getItem('guestCart')) };
+
+if (updatedGuestCart.items && updatedGuestCart.items[index]) {
+  // Remove the item from the local storage
+  updatedGuestCart.items.splice(index, 1);
+
+  // Update the local storage
+  localStorage.setItem('guestCart', JSON.stringify(updatedGuestCart));
+
+  // Update your component state
+  setCart({ items: updatedGuestCart.items });
+}
+
+  }
+};
+
 
   const calculateTotalPrice = () => {
     if (cart && cart.items) {
@@ -324,10 +342,13 @@ export const Cart = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-
+  
+    // Generate a random user ID for guest orders
+    const guestUserId = generateRandomUserId();
+  
     try {
       const cartItemsToOrder = cart.items.filter((item) => item.quantity > 0);
-
+  
       const response = await fetch('http://localhost:4000/order', {
         method: 'POST',
         headers: {
@@ -335,23 +356,24 @@ export const Cart = () => {
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          user: user.id, // Include user information
-          items: cartItemsToOrder, // Include the items in the cart
+          user: isAuthenticated ? user.id : guestUserId,
+          items: cartItemsToOrder,
           total: calculateTotalPrice(),
-          shippingAddress: formData.address, // Include shipping address
+          shippingAddress: formData.address,
+          isGuest:isAuthenticated ? false : true,
         }),
       });
-
+  
       if (response.ok) {
         clearCart();
-
+  
         const clearCartResponse = await fetch('http://localhost:4000/clear-cart', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-
+  
         if (clearCartResponse.ok) {
           // Cart cleared successfully on the server
           console.log('Order placed successfully');
@@ -359,25 +381,36 @@ export const Cart = () => {
         setFormOpen(false);
       } else {
         console.error('Error placing order:', response.status);
-        // Handle the error (e.g., display an error message to the user)
       }
     } catch (error) {
       console.error('Error placing order:', error);
-      // Handle the error (e.g., display an error message to the user)
     }
+  };
+  
+
+  const generateRandomUserId = () => {
+    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const userIdLength = 24;
+    let randomUserId = '';
+  
+    for (let i = 0; i < userIdLength; i++) {
+      randomUserId += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+  
+    return randomUserId;
   };
 
   const clearCart = () => {
-    // Assuming you have a way to clear the cart in your state management.
-    // Replace this with the appropriate logic for your application.
     setCart({ items: [] });
+    localStorage.removeItem('guestCart')
   };
 
   const handleGoBackToCart = () => {
     setFormOpen(false);
-    // You can use the `navigate` function to go back to the cart page
     navigate('/cart');
   };
+
+  
 
   return (
     <div>
@@ -514,6 +547,16 @@ export const Cart = () => {
                   name="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="phone">Phone:</label>
+                <input
+                  type="text"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 />
               </div>
               <div className="form-group">

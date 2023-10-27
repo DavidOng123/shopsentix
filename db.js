@@ -82,6 +82,13 @@ const orderSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  isGuest: {
+    type: Boolean,
+    default: false, // By default, the user is not a guest
+  },
+  razorpayOrderID:{
+    type:String
+  }
 });
 
 const reviewSchema = new mongoose.Schema({
@@ -90,11 +97,17 @@ const reviewSchema = new mongoose.Schema({
   comment: String,
 });
 
+const favoriteSchema = new mongoose.Schema({
+  user: String,
+  product: String
+});
+
 const CartModel = mongoose.model('Cart', cartSchema);
 const UserModel = mongoose.model('User', userSchema);
 const ProductModel = mongoose.model('Product', productSchema);
 const OrderModel = mongoose.model('Order', orderSchema);
 const ReviewModel=mongoose.model('Review', reviewSchema)
+const FavoriteModel=mongoose.model('Favorite', favoriteSchema)
 
 
 module.exports = {
@@ -102,5 +115,6 @@ module.exports = {
   ProductModel,
   CartModel,
   OrderModel,
-  ReviewModel
+  ReviewModel,
+  FavoriteModel
 };
