@@ -57,30 +57,43 @@
                 <Navbar />
                 <div className='product-wrapper'>
                     <div className='select-controls'>
-                        <select  value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+                        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
                             <option value="all">All</option>
                             <option value="Clothing">Clothing</option>
                             <option value="Electronic">Electronics</option>
                             <option value="Accessories">Accessories</option>
                         </select>
-                        <select  value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                        <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
                             <option value="priceAsc">Price: Low to High</option>
                             <option value="priceDesc">Price: High to Low</option>
                         </select>
                     </div>
-
+        
                     <div className="product-list">
                         {filteredProducts.map((product) => (
                             <div className="product" key={product._id}>
-                                <Link to={`/product/${product._id}`}>
-                                <div className="product-image">
-                                    <img src={product.imageUrl} alt={product.name} />
-                                </div>
-                                <div className="product-details">
-                                    <h2>{product.name}</h2>
-                                    <p>Price: ${product.price}</p>
-                                </div>
-                                </Link>
+                                {product.quantity === 0 ? ( // Check if quantity is 0
+                                <div>
+                                    <div className="product-image">
+                                        <img src={product.imageUrl} alt={product.name} />
+                                        </div>
+                                        <div className="product-details">
+                                            <h2>{product.name}</h2>
+                                            <p>Price: ${product.price}</p>
+                                            <p>Out of Stock</p>
+                                        </div>
+                                        </div>
+                                ) : (
+                                    <Link to={`/product/${product._id}`}>
+                                        <div className="product-image">
+                                            <img src={product.imageUrl} alt={product.name} />
+                                        </div>
+                                        <div className="product-details">
+                                            <h2>{product.name}</h2>
+                                            <p>Price: ${product.price}</p>
+                                        </div>
+                                    </Link>
+                                )}
                             </div>
                         ))}
                     </div>

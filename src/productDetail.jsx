@@ -4,6 +4,9 @@ import { Navbar } from './navbar';
 import { Footer } from './Footer';
 import { useAuth } from './auth';
 import './productDetail.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart } from '@fortawesome/free-solid-svg-icons';
+
 
 export const ProductDetail = () => {
   const { id } = useParams();
@@ -103,7 +106,6 @@ export const ProductDetail = () => {
     }
   
     if (user) {
-      // If the user is logged in, add the product to the database
       const userId = user.id;
       const productId = id;
       const attribute = selectedAttribute;
@@ -135,20 +137,18 @@ export const ProductDetail = () => {
       const existingGuestCart = JSON.parse(localStorage.getItem('guestCart')) || { items: [] };
 
       const item = {
-        productId: id,
+        product: id,
         quantity: quantity,
         attribute: selectedAttribute,
       };
   
       const existingItemIndex = existingGuestCart.items.findIndex(
-        (item) => item.productId === id && item.attribute === selectedAttribute
+        (item) => item.product === id && item.attribute === selectedAttribute
       );
   
       if (existingItemIndex !== -1) {
-        // If the product already exists, update the quantity
         existingGuestCart.items[existingItemIndex].quantity += quantity;
       } else {
-        // If it's a new product, add it to the guest cart
         existingGuestCart.items.push(item);
       }
   
@@ -157,10 +157,35 @@ export const ProductDetail = () => {
       setShowDialog(false);
     }
   };
+
+  const handleAddToFavorites = async () => {
+    if (user) {
+      try {
+        const response = await fetch('http://localhost:4000/add-to-favorites', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            productId: id,
+          }),
+        });
+  
+        if (response.ok) {
+          console.log('Added to favorites successfully.');
+        } else {
+          console.error('Error adding to favorites:', response.status);
+        }
+      } catch (error) {
+        console.error('Error adding to favorites:', error);
+      }
+    }
+  };
+  
   
 
   const handlePostReview =async () => {
-    // You need to implement an API endpoint to post a review
     if (!hasPurchased) {
       alert('You must purchase the product to leave a review');
       return;
@@ -227,6 +252,9 @@ export const ProductDetail = () => {
         <button className="add-to-cart-button" onClick={handleAddToCart}>
           Add to Cart
         </button>
+        <button className="add-to-favorites-button" onClick={handleAddToFavorites}>
+  <FontAwesomeIcon icon={faHeart} />
+</button>
       </div>
     </div>
   ) : (

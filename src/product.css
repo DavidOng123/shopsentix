@@ -1,4 +1,5 @@
 .product {
+
     display: inline-block;
     margin: 10px;
     padding: 20px; 
@@ -37,16 +38,121 @@
     color: #777; 
 }
 
-.product button {
-    background-color: #007BFF;
-    color: #fff;
-    border: none;
-    padding: 10px 20px; 
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s;
+.product-card {
+   
+    margin: 10px;
+   
+    padding: 20px; 
+    border: 1px solid #eee; 
+    background-color: #fff;
+    width: 250px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+    transition: transform 0.2s; 
+
+
+    text-align: center;
+    max-width: 300px; 
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .product-card:hover {
+    transform: scale(1.03); 
 }
 
-.product button:hover {
-    background-color: #0056b3;
-}
+  .product-card img {
+    max-width: 100%;
+    max-height: 200px; 
+    object-fit: cover;
+  }
+  
+  .product-card h2 {
+    font-size: 16px;
+    margin: 10px 0;
+  }
+  
+  .product-card p {
+    font-size: 14px;
+    margin: 10px 0;
+  }
+  
+  
+.popular-category {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    justify-items: center; 
+  }
+
+  .product {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+
+  .product-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+  
+  .product:first-child {
+    justify-self: end;
+  }
+  
+  .product:last-child {
+    justify-self: start; 
+  }
+  
+  .product:nth-child(2) {
+    justify-self: center; 
+  }
+
+  .product-list{
+    
+    background-color: whitesmoke;
+  }
+  
+  .out-of-stock-message {
+    color: red;
+    font-weight: bold;
+  }
+
+  .loginbox {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 80px;
+    background: #fff;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  .loginbox button {
+    width: 500px;
+    height: 50px;
+    background: #ED2553;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center; 
+    display: block; 
+    margin: 0 auto; 
+  }
+  
+  .loginbox button:hover {
+    background: #fff;
+    color: #ED2553;
+  }

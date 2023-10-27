@@ -1,4 +1,4 @@
-GET http://localhost:4000/uniqueProductNames
+GET http://localhost:4000/suggested-product
 
 
 GET http://localhost:5000
