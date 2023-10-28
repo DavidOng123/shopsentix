@@ -1,4 +1,10 @@
-GET http://localhost:4000/suggested-product
+
+POST http://localhost:4000/forgot-password
+Content-Type: application/json
+
+{
+  "email": "lipweiong@gmail.com",
+}
 
 
 GET http://localhost:5000

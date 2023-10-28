@@ -13,6 +13,7 @@ const { body, validationResult } = require('express-validator');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit'); 
 const path = require('path');
+
 const cookieParser = require('cookie-parser');
 
 const corsOptions = {
@@ -20,6 +21,8 @@ const corsOptions = {
   credentials: true, 
 };
 
+app.set("view engine","ejs")
+app.use(express.urlencoded({extended:false}))
 app.use(cors(corsOptions));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -154,7 +157,7 @@ app.post('/token', async (req, res) => {
       if (!user) return res.sendStatus(403);
     
       const accessToken = generateAccessToken({ id:user._id,email: user.email, username: user.username, role:user.role });
-      res.json({ accessToken });
+      res.json({ accessToken:accessToken });
     } catch (error) {
       console.error(error);
       res.sendStatus(403);
@@ -208,11 +211,9 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.post('/reset-password', async (req, res) => {
-  const { email } = req.body.email;
+app.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
 
-  const resetToken = generateResetToken();
-  const resetTokenExpiration = new Date().getTime() + 3600000; // 1 hour from now
 
   try {
     
@@ -220,62 +221,90 @@ app.post('/reset-password', async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
+    const secret=process.env.JWT_SECRET+user.password
+    const resetToken=jwt.sign({email:user.email,id:user._id},secret,{expiresIn:"5m"})
+    const link=`http://localhost:4000/reset-password/${user._id}/${resetToken}`
+    console.log(link)
 
-    user.resetToken = resetToken;
-    user.resetTokenExpiration = resetTokenExpiration;
-    await user.save();
 
-    // Send an email to the user with a link to reset their password
+    
     const transporter = nodemailer.createTransport({
-      service: 'Gmail', // e.g., Gmail
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      service: 'gmail', 
       auth: {
-        user: process.env.EMAIL_SERVIDE_USER,
-        pass: process.env.EMAIL_SERVIDE_PASS,
+        user: "ong112345678@gmail.com",
+        pass: "rbtrlmadkhmbahmg",
       },
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_SERVIDE_USER,
+      from: "p20012449@student.newinti.edu.my",
       to: email,
       subject: 'Password Reset Request',
-      text: `Click the following link to reset your password: http://localhost:4000/reset-password/${resetToken}`,
+      text: `Click the following link to reset your password: ${link}`,
     };
 
-    transporter.sendMail(mailOptions, (error) => {
+    transporter.sendMail(mailOptions, function(error,info) {
       if (error) {
         console.error('Error sending email:', error);
-        return res.status(500).json({ message: 'Password reset email not sent.' });
+      }
+      else{
+        console.log('Email sent: ' + info.response);
       }
 
-      res.status(200).json({ message: 'Password reset email sent.' });
     });
+  res.status(200).json({ message: 'Password reset email sent.' });
   } catch (error) {
     console.error('Password reset request failed:', error);
     res.status(500).json({ message: 'Password reset request failed. Please try again.' });
   }
 });
 
-app.post('/reset-password/:token', async (req, res) => {
-  const { token } = req.params;
-  const { newPassword } = req.body;
+app.get('/reset-password/:id/:token', async (req, res) => {
+  const { id,token } = req.params;
 
-  try {
-    const user = await UserModel.findOne({ resetToken: token });
+  const user = await UserModel.findOne({ _id:id });
+  if (!user) {
+    return res.status(404).json({ message: 'User not found.' });
+  }
+  const secret=process.env.JWT_SECRET+user.password
+  try{
+const verify =jwt.verify(token,secret)
+res.render("index",{email:verify.email})
+  }catch(error){
+    console.log(error)
+res.send("Not verified")
+  }
+});
 
-    if (!user || user.resetTokenExpiration < new Date()) {
-      return res.status(400).json({ message: 'Invalid or expired token.' });
-    }
+app.post('/reset-password/:id/:token', async (req, res) => {
+  const { id,token } = req.params;
+  const { password } = req.body;
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedPassword;
-    user.resetToken = undefined;
-    user.resetTokenExpiration = undefined;
-    await user.save();
-
-    res.status(200).json({ message: 'Password reset successful.' });
-  } catch (error) {
-    console.error('Password reset failed:', error);
-    res.status(500).json({ message: 'Password reset failed. Please try again.' });
+  const user = await UserModel.findOne({ _id:id });
+  if (!user) {
+    return res.status(404).json({ message: 'User not found.' });
+  }
+  const secret=process.env.JWT_SECRET+user.password
+  try{
+const verify =jwt.verify(token,secret)
+if (!password || password.length < 7) {
+  return res.status(400).json({ message: 'Password must be at least 7 characters long.' });
+}
+const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      await UserModel.updateOne({
+        _id:id
+      },
+      {$set:{
+        password:hashedPassword,
+      },})
+res.json("Password updated")
+  }catch(error){
+    console.log(error)
+res.send("Something went wrong")
   }
 });
 
@@ -308,7 +337,7 @@ app.post('/products', upload.single('image'), async (req, res) => {
   }
 });
 
-// Get a list of all products
+
 app.get('/products', async (req, res) => {
 try {
   const products = await ProductModel.find();
@@ -603,10 +632,10 @@ app.post('/order', async (req, res) => {
     // Create the order
     const order = new OrderModel({
       user: user, // Assuming user is already authenticated and you have the user ID available
-      items:items,
+      items:items.map(item => ({ ...item, isReviewed: false })), 
       total:total,
       shippingAddress:shippingAddress,
-      isGuest:isGuest
+      isGuest:isGuest,
     });
 
     // Deduct product quantities from the inventory
@@ -981,8 +1010,65 @@ app.get('/favorites', authenticateToken, async (req, res) => {
   }
 });
 
+app.put('/update-orders/:orderId', async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const newStatus = req.body.newStatus;
 
+    const order = await OrderModel.findByIdAndUpdate(orderId, { status: newStatus }, { new: true });
 
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    return res.json({ message: 'Order status updated successfully', order });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/all-orders', async (req, res) => {
+  try {
+    const orders = await OrderModel.find();
+    res.json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to fetch orders' });
+  }
+  });
+
+  app.put('/update-review-status/:orderId/:productId', async (req, res) => {
+    try {
+      const orderId = req.params.orderId;
+      const productId = req.params.productId;
+      const { isReviewed } = req.body;
+  
+      // Find the order by ID
+      const order = await OrderModel.findById(orderId);
+  
+      if (!order) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+  
+      // Find the item within the order's items array
+      const itemToUpdate = order.items.find(item => item.product === productId);
+  
+      if (!itemToUpdate) {
+        return res.status(404).json({ error: 'Item not found in the order' });
+      }
+  
+      // Update the isReviewed property of the item
+      itemToUpdate.isReviewed = isReviewed;
+  
+      // Save the updated order
+      await order.save();
+  
+      return res.json({ message: 'Review status updated successfully' });
+    } catch (error) {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+  
 
 function generateAccessToken(payload) {
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
