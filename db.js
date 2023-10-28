@@ -69,7 +69,12 @@ const cartSchema = new mongoose.Schema({
 
 const orderSchema = new mongoose.Schema({
   user: String,
-  items: [cartItemSchema], 
+  items: [new mongoose.Schema({
+    product: String,
+    quantity: Number,
+    attribute:String,
+    isReviewed:Boolean
+  })], 
   total: {
     type: Number,
     required: true,
@@ -88,7 +93,11 @@ const orderSchema = new mongoose.Schema({
   },
   razorpayOrderID:{
     type:String
-  }
+  },
+  status:{
+    type:String,
+    default:'Preparing'
+  },
 });
 
 const reviewSchema = new mongoose.Schema({

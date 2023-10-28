@@ -183,38 +183,6 @@ export const ProductDetail = () => {
     }
   };
   
-  
-
-  const handlePostReview =async () => {
-    if (!hasPurchased) {
-      alert('You must purchase the product to leave a review');
-      return;
-    }
-    try {
-      const response = await fetch('http://localhost:4000/post-review', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          productId: id,
-          comment: comment,
-        }),
-      });
-
-      if (response.ok) {
-        // Refresh reviews after posting a new review
-        fetchReviews();
-        console.log("Review posted successfully.")
-        setComment('')
-      } else {
-        console.error('Error posting review:', response.status);
-      }
-    } catch (error) {
-      console.error('Error posting review:', error);
-    }
-  };
 
   return (
     <div className="product-detail-page">
@@ -287,21 +255,6 @@ export const ProductDetail = () => {
         )}
       </div>
 
-      {/* Display comment form only if the user has purchased the product */}
-      {hasPurchased && (
-        <div className="comment-form-container">
-          <h3 className="comment-title">Post a Review</h3>
-          <input
-            type="text"
-            placeholder="Write your review here..."
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-          />
-          <button className="submit-review-button" onClick={handlePostReview}>
-            Submit Review
-          </button>
-        </div>
-      )}
 
 {showDialog && (
       <div className="cart-dialog-overlay">

@@ -1,0 +1,62 @@
+.order-management-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .order-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 10px;
+    width: 80%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .order-id {
+    font-weight: bold;
+    font-size: 16px;
+  }
+  
+  .order-status {
+    color: #007bff; 
+  }
+  
+  .order-items {
+    margin-bottom: 10px;
+  }
+  
+  .order-item {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+  }
+  
+  .order-item-details {
+    flex: 1;
+  }
+  
+  .order-action {
+    display: flex;
+    align-items: center;
+  }
+  
+  select {
+    margin-left: 10px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  

@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import api from './api';
-import './reset-password.css'; // Create a CSS file for styling the reset password page
+import axios from 'axios';
+import './reset-password.css'; 
 
 export const ResetPassword = () => {
   const [formData, setFormData] = useState({
@@ -24,11 +24,27 @@ export const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post('http://localhost:4000/reset-password', formData); // Replace with your server endpoint
-      setSuccessMessage('Password reset instructions sent to your email.');
+      const response = await fetch('http://localhost:4000/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+        }),
+      });
+    
+      if (response.status === 200) {
+        const data = await response.json();
+        setSuccessMessage(data.message);
+      } else {
+        const errorText = await response.text();
+        setErrorMessage(errorText);
+      }
     } catch (error) {
       setErrorMessage('Failed to send reset instructions. Please try again.');
     }
+    
   };
 
   return (
