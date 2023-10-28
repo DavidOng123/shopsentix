@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const app = express()
 const jwt = require('jsonwebtoken')
+const Razorpay=require('razorpay')
 const crypto=require('crypto');
 const bcrypt = require('bcrypt');
 const { body, validationResult } = require('express-validator');
@@ -42,6 +43,7 @@ app.use(bodyParser.json());
 
 
 const { UserModel , ProductModel, CartModel, OrderModel, ReviewModel, FavoriteModel} = require('./db');
+const { error } = require('console');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -394,7 +396,6 @@ app.post('/products/:productId', async (req, res) => {
     quantity
   } = req.body;
 
-  // Find the product by ID (replace this with your database query)
   try {
     const productToUpdate = await ProductModel.findOne({ _id: productId });
     
@@ -522,7 +523,6 @@ app.post('/add-to-cart', authenticateToken, async (req, res) => {
       }
     }
 
-    // Save the cart to the database
     await userCart.save();
 
     res.status(200).json({ message: 'Product added to the cart' });
@@ -542,30 +542,24 @@ app.post('/update-cart', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'Invalid quantity' });
     }
 
-    // Check if the user already has a cart
     let userCart = await CartModel.findOne({ user: userId });
 
     if (!userCart) {
-      // If the user doesn't have a cart, create a new one
       userCart = new CartModel({
         user: userId,
         items: [{ product: productId, quantity: parsedQuantity, attribute:attribute }],
       });
     } else {
-      // If the user already has a cart, add the item or update its quantity
       const existingItem = userCart.items.find((item) => item.product === productId);
 
       if (existingItem) {
-        // Update the quantity if the product is already in the cart
         existingItem.quantity = parsedQuantity;
         existingItem.attribute=attribute;
       } else {
-        // Add the product to the cart if it's not already there
         userCart.items.push({ product: productId, quantity: parsedQuantity , attribute:attribute});
       }
     }
 
-    // Save the cart to the database
     await userCart.save();
 
     res.status(200).json({ message: 'Product added to the cart' });
@@ -594,20 +588,18 @@ app.post('/remove-from-cart',authenticateToken, async (req, res) => {
 
 
   try {
-    // Find the user's cart based on their user ID
+   
     const userCart = await CartModel.findOne({ user: userId });
 
     if (!userCart) {
       return res.status(404).json({ error: 'User cart not found' });
     }
 
-    // Find the index of the item in the user's cart
     const itemIndex = userCart.items.findIndex((item) => {
       return item.product === productId && item.attribute === attribute;
     });
 
     if (itemIndex !== -1) {
-      // Remove the item from the user's cart
       userCart.items.splice(itemIndex, 1);
 
       // Save the updated user cart
@@ -627,9 +619,25 @@ app.post('/order', async (req, res) => {
     const { user, items, shippingAddress, total, isGuest } = req.body;
     console.log('user:'+user+'\nitems:'+items+'\nshippingAddress:'+shippingAddress+'\ntotal:'+total)
     
-    
+    const instance=new Razorpay({
+      key_id:process.env.RAZORPAY_KEY_ID,
+      key_secret:process.env.RAZORPAY_SECRET
+    })
 
-    // Create the order
+    const options={
+      amount:total,
+      currency:"MYR",
+      receipt:crypto.randomBytes(10).toString("hex")
+    }
+
+    instance.orders.create(options,(error,order)=>{
+      if(error){
+        console.log(error)
+
+      }
+      console.log("Razor:"+JSON.stringify(order))
+    })
+
     const order = new OrderModel({
       user: user, // Assuming user is already authenticated and you have the user ID available
       items:items.map(item => ({ ...item, isReviewed: false })), 
@@ -638,7 +646,6 @@ app.post('/order', async (req, res) => {
       isGuest:isGuest,
     });
 
-    // Deduct product quantities from the inventory
     for (const item of items) {
       const product = await ProductModel.findById(item.product);
 
@@ -654,7 +661,6 @@ app.post('/order', async (req, res) => {
       await product.save();
     }
 
-    // Save the order
     const savedOrder = await order.save();
 
     res.json(savedOrder);
@@ -664,11 +670,32 @@ app.post('/order', async (req, res) => {
   }
 });
 
+app.post('/verify',async (req,res)=>{
+  try{
+    const {razorpay_order_id,razorpay_payment_id, razorpay_signature}=req.body
+    const sign=razorpay_order_id+"|"+razorpay_payment_id
+    const expectedSign=crypto.createHmac("sha256",process.env.RAZORPAY_SECRET).update(sign.toString()).digest("hex")
+
+    if(razorpay_signature===expectedSign){
+      res.status(200).json({ message: 'Payment verified' });
+    }else{
+      res.status(400).json({ message: 'Payment not verified' });
+    }
+
+
+  }catch(error){
+console.log(error)
+res.status(500).json({ error: 'internal server error' });
+  }
+  
+
+});
+
 app.post('/clear-cart', authenticateToken, async (req, res) => {
   try {
    
-    const user = req.user; // Assuming that the authenticated user's information is stored in req.user
-    await CartModel.deleteMany({ user: user.id }); // Clear all cart items for the user
+    const user = req.user; 
+    await CartModel.deleteMany({ user: user.id }); 
 
     res.json({ message: 'Cart cleared successfully' });
   } catch (error) {
@@ -1069,6 +1096,27 @@ app.get('/all-orders', async (req, res) => {
     }
   });
   
+app.patch('/update-profile', authenticateToken, async (req, res) => {
+  const userId = req.user.id; 
+  const { username, address, phone } = req.body;
+
+  try {
+    const user = await UserModel.findByIdAndUpdate(
+      userId,
+      { username, address, phone },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 function generateAccessToken(payload) {
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });

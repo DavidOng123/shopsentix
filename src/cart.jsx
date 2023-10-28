@@ -242,7 +242,6 @@ export const Cart = () => {
       });
 
       if (response.ok) {
-        // Handle successful response
       } else {
         console.error('Error updating cart:', response.status);
       }
@@ -255,7 +254,6 @@ const handleRemoveItem = async (index) => {
   const removedItem = cart.items[index];
 
   if (isAuthenticated) {
-    // Remove the item from the server-side cart for authenticated users
     try {
       const response = await fetch('http://localhost:4000/remove-from-cart', {
         method: 'POST',
@@ -270,30 +268,23 @@ const handleRemoveItem = async (index) => {
       });
 
       if (response.ok) {
-        // If the server successfully removed the item, update the cart in the state
         const updatedCart = [...cart.items];
         updatedCart.splice(index, 1);
         setCart({ items: updatedCart });
       } else {
         console.error('Error removing item from the cart:', response.status);
-        // Handle the error (e.g., display an error message to the user)
       }
     } catch (error) {
       console.error('Error removing item from the cart:', error);
-      // Handle the error (e.g., display an error message to the user)
     }
   } else {
-   // Remove the item from the local storage for guest users
 const updatedGuestCart = { ...JSON.parse(localStorage.getItem('guestCart')) };
 
 if (updatedGuestCart.items && updatedGuestCart.items[index]) {
-  // Remove the item from the local storage
   updatedGuestCart.items.splice(index, 1);
 
-  // Update the local storage
   localStorage.setItem('guestCart', JSON.stringify(updatedGuestCart));
 
-  // Update your component state
   setCart({ items: updatedGuestCart.items });
 }
 

@@ -12,14 +12,16 @@ export const Profile = () => {
   const [purchasedItems, setPurchasedItems] = useState([]);
   const [activeTab, setActiveTab] = useState('profile');
   const [orders, setOrders] = useState([]);
-  const [comment, setComment] = useState(''); // Comment state
-  const [showCommentForm, setShowCommentForm] = useState(false); // State to show/hide the comment form
-  const [reviewData, setReviewData] = useState({ orderId: '', productId: '' }); // State to store review data
+  const [comment, setComment] = useState(''); 
+  const [showCommentForm, setShowCommentForm] = useState(false); 
+  const [reviewData, setReviewData] = useState({ orderId: '', productId: '' });
+  const [profileData, setProfileData] = useState({});
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
     } else {
+      setProfileData(user)
       const tokenExpiration = localStorage.getItem('tokenExpiration');
       const currentTime = Date.now() / 1000;
 
@@ -63,6 +65,38 @@ export const Profile = () => {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
+
+  const handleProfileChange = (field, value) => {
+    setProfileData({
+      ...profileData,
+      [field]: value,
+    });
+
+    updateProfileInDatabase(field, value);
+  };
+
+  const updateProfileInDatabase = (field, value) => {
+    // Send a PATCH request to update the profile data on the server
+    fetch('http://localhost:4000/update-profile', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ [field]: value }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          console.log(`Profile ${field} updated successfully.`);
+        } else {
+          console.error(`Error updating profile ${field}:`, response.status);
+        }
+      })
+      .catch((error) => {
+        console.error(`Error updating profile ${field}:`, error);
+      });
+  };
+
 
   const markOrderAsReceived = async (orderId) => {
     try {
@@ -175,17 +209,45 @@ export const Profile = () => {
                 </button>
               </div>
             )}
-            {activeTab === 'edit' && (
-              <div className='edit-profile'>
-                {/* Add the form to edit user profile */}
-                <h2>Edit Your Profile</h2>
-                {/* Form fields for editing profile */}
+              {activeTab === 'edit' && (
+            <div className='edit-profile'>
+              <h2>Edit Your Profile</h2>
+              <div>
+                <label htmlFor='username'>Username:</label>
+                <input
+                  type='text'
+                  name='username'
+                  value={profileData.username}
+                  onChange={(e) => handleProfileChange('username', e.target.value)}
+                />
               </div>
-            )}
+              <div>
+                <label htmlFor='address'>Address:</label>
+                <input
+                  type='text'
+                  name='address'
+                  value={profileData.address}
+                  onChange={(e) => handleProfileChange('address', e.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor='phone'>Phone:</label>
+                <input
+                  type='text'
+                  name='phone'
+                  value={profileData.phone}
+                  onChange={(e) => handleProfileChange('phone', e.target.value)}
+                />
+              </div>
+              {/* Add more form fields for other profile information */}
+            </div>
+          )}
             {activeTab === 'purchases' && (
               <div className='purchased-items'>
                 <h2>Your Purchased Items</h2>
+                <div className="purchased-items-container">
                 <ul>
+
                   {orders.map((order, orderIndex) => (
                     <li key={orderIndex}>
                       <div className='order-details'>
@@ -241,6 +303,7 @@ export const Profile = () => {
                     </li>
                   ))}
                 </ul>
+                </div>
               </div>
             )}
           </div>
