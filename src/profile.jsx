@@ -22,19 +22,30 @@ export const Profile = () => {
       navigate('/login');
     } else {
       setProfileData(user)
-      const tokenExpiration = localStorage.getItem('tokenExpiration');
-      const currentTime = Date.now() / 1000;
-
-      if (tokenExpiration && currentTime > tokenExpiration) {
-        refreshAccessToken()
-          .then(() => {
+      const checkAndRefreshToken = async () => {
+        const currentTime = Date.now() / 1000;
+        const tokenExpiration = localStorage.getItem('tokenExpiration');
+  
+        if (tokenExpiration && currentTime > tokenExpiration) {
+          try {
+            await refreshAccessToken();
             setTokenRefreshed(true);
-          })
-          .catch((error) => {
+          } catch (error) {
             console.error('Token refresh failed:', error);
             navigate('/login');
-          });
-      }
+          }
+        }
+      };
+  
+      checkAndRefreshToken();
+      const tokenCheckInterval = 15 * 60 * 1000; 
+      const tokenCheckIntervalId = setInterval(checkAndRefreshToken, tokenCheckInterval);
+  
+     
+      return () => {
+        clearInterval(tokenCheckIntervalId);
+      };
+    
     }
     if (activeTab === 'purchases') {
       // Make an API request to get the user's orders
@@ -87,15 +98,27 @@ export const Profile = () => {
     })
       .then((response) => {
         if (response.ok) {
-          console.log(`Profile ${field} updated successfully.`);
+          return response.json(); // Parse the JSON response
         } else {
           console.error(`Error updating profile ${field}:`, response.status);
+          throw new Error(`Error updating profile ${field}`);
         }
+      })
+      .then((data) => {
+        const { accessToken, refreshToken } = data;
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        const expirationDurationInSeconds = 2 * 60 * 60;
+        const tokenExpiration = Math.floor(Date.now() / 1000) + expirationDurationInSeconds;
+        localStorage.setItem('tokenExpiration', tokenExpiration);
+  
+        console.log(`Profile ${field} updated successfully.`);
       })
       .catch((error) => {
         console.error(`Error updating profile ${field}:`, error);
       });
   };
+  
 
 
   const markOrderAsReceived = async (orderId) => {

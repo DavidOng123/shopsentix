@@ -157,8 +157,9 @@ app.post('/token', async (req, res) => {
     try {
       const user = await UserModel.findOne({ refreshToken });
       if (!user) return res.sendStatus(403);
-    
-      const accessToken = generateAccessToken({ id:user._id,email: user.email, username: user.username, role:user.role });
+      const payload = {id:user._id, email: user.email, phone: user.phoneNumber, username: user.username, address:user.address, role:user.role };
+
+      const accessToken = generateAccessToken(payload);
       res.json({ accessToken:accessToken });
     } catch (error) {
       console.error(error);
@@ -201,10 +202,8 @@ app.post('/login', async (req, res) => {
     const refreshToken = generateRefreshToken(payload);
    
     user.refreshToken = refreshToken;
-    await user.save();
 
-    res.cookie('access_token', accessToken, { httpOnly: true });
-    res.cookie('refresh_token', refreshToken, { httpOnly: true });
+    await user.save();
     res.json({ accessToken, refreshToken });
 
   } catch (error) {
@@ -1110,8 +1109,17 @@ app.patch('/update-profile', authenticateToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
+    const payload = {id:user._id, email: user.email, phone: user.phoneNumber, username: user.username, address:user.address, role:user.role };
+    const accessToken = generateAccessToken(payload);
 
-    res.json(user);
+   
+    const refreshToken = generateRefreshToken(payload);
+   
+    user.refreshToken = refreshToken;
+    
+    await user.save();
+    res.json({ accessToken, refreshToken });
+
   } catch (error) {
     console.error('Error updating user profile:', error);
     res.status(500).json({ message: 'Internal server error' });

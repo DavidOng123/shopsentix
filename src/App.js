@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { AuthProvider } from './auth'; // Import your AuthProvider here
-import axios from 'axios'; // Import axios here
+import { AuthProvider,useAuth } from './auth'; 
+import axios from 'axios'; 
 
 import { Home } from './home';
 import { Login } from './login';
@@ -19,28 +19,27 @@ import { OrderManagement } from './admin/orderManagement';
 import { EditProduct } from './admin/editProduct';
 
 function App() {
-  // Set up axios interceptors for token refresh
+  const { refreshAccessToken, refreshToken } = useAuth(); 
+
   axios.interceptors.response.use(
     (response) => {
       return response;
     },
     async (error) => {
       if (error.response && error.response.status === 401) {
-        const refreshToken = localStorage.getItem('refreshToken');
-
+      
         if (refreshToken) {
           try {
-            // Call your refresh token logic here
-            const response = await axios.post('http://localhost:4000/token', {
-              token: refreshToken,
-            });
+            // Call your refresh token logic here using the refreshAccessToken function
+            const newAccessToken = await refreshAccessToken();
 
-            const newAccessToken = response.data.accessToken;
-            localStorage.setItem('accessToken', newAccessToken);
-
-            // Retry the failed request
-            error.config.headers.Authorization = `Bearer ${newAccessToken}`;
-            return axios.request(error.config);
+            if (newAccessToken) {
+              // Retry the failed request with the new access token
+              error.config.headers.Authorization = `Bearer ${newAccessToken}`;
+              return axios.request(error.config);
+            } else {
+              console.error('Token refresh failed.');
+            }
           } catch (refreshError) {
             console.error('Token refresh failed:', refreshError);
           }
@@ -52,6 +51,7 @@ function App() {
       return Promise.reject(error);
     }
   );
+
 
   return (
     <Router>
