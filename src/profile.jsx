@@ -40,38 +40,38 @@ export const Profile = () => {
       checkAndRefreshToken();
       const tokenCheckInterval = 15 * 60 * 1000; 
       const tokenCheckIntervalId = setInterval(checkAndRefreshToken, tokenCheckInterval);
-  
+      if (activeTab === 'purchases') {
+        fetch(`http://localhost:4000/orders/${user?.id}`)
+          .then((response) => response.json())
+          .then(async (data) => {
+            console.log('purchased item:'+data)
+            const ordersWithItems = await Promise.all(
+              data.map(async (order) => {
+                const items = order.items;
+                const itemsWithNames = await Promise.all(
+                  items.map(async (item) => {
+                    const response = await fetch(`http://localhost:4000/products/${item.product}`);
+                    const productData = await response.json();
+                    return { ...item, productName: productData.name, image: productData.file_name };
+                  })
+                );
+                return { ...order, items: itemsWithNames };
+              })
+            );
+            setOrders(ordersWithItems);
+          })
+          .catch((error) => {
+            console.error('Error fetching purchased items:', error);
+          });
+      }
      
       return () => {
         clearInterval(tokenCheckIntervalId);
       };
     
     }
-    if (activeTab === 'purchases') {
-      // Make an API request to get the user's orders
-      fetch(`http://localhost:4000/orders/${user?.id}`)
-        .then((response) => response.json())
-        .then(async (data) => {
-          const ordersWithItems = await Promise.all(
-            data.map(async (order) => {
-              const items = order.items;
-              const itemsWithNames = await Promise.all(
-                items.map(async (item) => {
-                  const response = await fetch(`http://localhost:4000/products/${item.product}`);
-                  const productData = await response.json();
-                  return { ...item, productName: productData.name, image: productData.file_name };
-                })
-              );
-              return { ...order, items: itemsWithNames };
-            })
-          );
-          setOrders(ordersWithItems);
-        })
-        .catch((error) => {
-          console.error('Error fetching purchased items:', error);
-        });
-    }
-  }, [isAuthenticated, navigate, refreshAccessToken, activeTab, user?.id]);
+    
+  }, [isAuthenticated, navigate, refreshAccessToken, activeTab, user]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);

@@ -10,7 +10,12 @@
         const [products, setProducts] = useState([]);
         const [filteredProducts, setFilteredProducts] = useState([]);
         const [categoryFilter, setCategoryFilter] = useState('all');
-        const [sortOption, setSortOption] = useState('priceAsc'); // Default sort option
+        const [sortOption, setSortOption] = useState('priceAsc');
+        const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
 
         useEffect(() => {
             async function fetchProducts() {
@@ -37,25 +42,38 @@
         }, []);
 
         useEffect(() => {
-            const filtered = products.filter((product) => product.available).filter((product) => {
+            const filtered = products
+              .filter((product) => product.available)
+              .filter((product) => {
                 return categoryFilter === 'all' || product.category === categoryFilter;
-            });
-
+              })
+              .filter((product) => {
+                return !searchQuery || product.name.toLowerCase().includes(searchQuery.toLowerCase());
+              });
+        
             const sorted = filtered.sort((a, b) => {
-                if (sortOption === 'priceAsc') {
-                    return a.price - b.price;
-                } else if (sortOption === 'priceDesc') {
-                    return b.price - a.price;
-                }
+              if (sortOption === 'priceAsc') {
+                return a.price - b.price;
+              } else if (sortOption === 'priceDesc') {
+                return b.price - a.price;
+              }
             });
-
+        
             setFilteredProducts(sorted);
-        }, [categoryFilter, sortOption, products]);
+          }, [categoryFilter, sortOption, products, searchQuery]);
 
         return (
             <div>
                 <Navbar />
                 <div className='product-wrapper'>
+                <div className='search-input-container'>
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
+        </div>
                     <div className='select-controls'>
                         <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
                             <option value="all">All</option>
@@ -68,35 +86,70 @@
                             <option value="priceDesc">Price: High to Low</option>
                         </select>
                     </div>
+
+                    
         
-                    <div className="product-list">
-                        {filteredProducts.map((product) => (
-                            <div className="product" key={product._id}>
-                                {product.quantity === 0 ? ( // Check if quantity is 0
-                                <div>
-                                    <div className="product-image">
-                                        <img src={product.imageUrl} alt={product.name} />
-                                        </div>
-                                        <div className="product-details">
-                                            <h2>{product.name}</h2>
-                                            <p>Price: ${product.price}</p>
-                                            <p>Out of Stock</p>
-                                        </div>
-                                        </div>
-                                ) : (
-                                    <Link to={`/product/${product._id}`}>
-                                        <div className="product-image">
-                                            <img src={product.imageUrl} alt={product.name} />
-                                        </div>
-                                        <div className="product-details">
-                                            <h2>{product.name}</h2>
-                                            <p>Price: ${product.price}</p>
-                                        </div>
-                                    </Link>
-                                )}
-                            </div>
-                        ))}
+        <div className='product-list'>
+          {searchQuery ? (
+            filteredProducts.length === 0 ? (
+              <p>No results found for '{searchQuery}'</p>
+            ) : (
+              filteredProducts.map((product) => (
+                <div className="product" key={product._id}>
+                  {product.quantity === 0 ? (
+                    <div>
+                      <div className="product-image">
+                        <img src={product.imageUrl} alt={product.name} />
+                      </div>
+                      <div className="product-details">
+                        <h2>{product.name}</h2>
+                        <p>Price: ${product.price}</p>
+                        <p>Out of Stock</p>
+                      </div>
                     </div>
+                  ) : (
+                    <Link to={`/product/${product._id}`}>
+                      <div className="product-image">
+                        <img src={product.imageUrl} alt={product.name} />
+                      </div>
+                      <div className="product-details">
+                        <h2>{product.name}</h2>
+                        <p>Price: ${product.price}</p>
+                      </div>
+                    </Link>
+                  )}
+                </div>
+              ))
+            )
+          ) : (
+            filteredProducts.map((product) => (
+              <div className="product" key={product._id}>
+                {product.quantity === 0 ? (
+                  <div>
+                    <div className="product-image">
+                      <img src={product.imageUrl} alt={product.name} />
+                    </div>
+                    <div className="product-details">
+                      <h2>{product.name}</h2>
+                      <p>Price: ${product.price}</p>
+                      <p>Out of Stock</p>
+                    </div>
+                  </div>
+                ) : (
+                  <Link to={`/product/${product._id}`}>
+                    <div className="product-image">
+                      <img src={product.imageUrl} alt={product.name} />
+                    </div>
+                    <div className="product-details">
+                      <h2>{product.name}</h2>
+                      <p>Price: ${product.price}</p>
+                    </div>
+                  </Link>
+                )}
+              </div>
+            ))
+          )}
+        </div>
                 </div>
                 <Footer />
             </div>

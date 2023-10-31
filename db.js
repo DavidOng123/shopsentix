@@ -91,7 +91,7 @@ const orderSchema = new mongoose.Schema({
     type: Boolean,
     default: false, // By default, the user is not a guest
   },
-  razorpayOrderID:{
+  paypalOrderID:{
     type:String
   },
   status:{

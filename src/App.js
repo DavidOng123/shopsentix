@@ -17,6 +17,7 @@ import { AdminDashboard } from './admin/adminDashboard';
 import { ProductManagement } from './admin/productManagement';
 import { OrderManagement } from './admin/orderManagement';
 import { EditProduct } from './admin/editProduct';
+import CheckoutForm from "./Component/Checkout"
 
 function App() {
   const { refreshAccessToken, refreshToken } = useAuth(); 
@@ -71,6 +72,7 @@ function App() {
           <Route path='/admin/productManagement' element={<ProductManagement />} />
           <Route path='/admin/orderManagement' element={<OrderManagement />} />
           <Route path='/admin/editProduct/:id' element={<EditProduct />} />
+          <Route exact path='checkout/' index element={<CheckoutForm />} />
         </Routes>
       </AuthProvider>
     </Router>

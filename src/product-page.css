@@ -6,6 +6,24 @@
     padding: 20px;
     background-color: #f8f8f8;
   }
+
+  .search-input-container {
+    margin: 10px 0;
+  }
+  
+  .search-input-container input {
+    width: 98%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+  }
+  
+  .search-input-container input::placeholder {
+    color: #888;
+  }
+  
   
   .select-controls {
     display: inline-block;
@@ -97,6 +115,8 @@
     max-height: 100%;
     object-fit: cover;
   }
+
+
   
   @media (max-width: 768px) {
     .product-list {

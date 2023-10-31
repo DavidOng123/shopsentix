@@ -4,6 +4,7 @@ import { Navbar } from './navbar';
 import { Footer } from './Footer';
 import { useAuth } from './auth';
 import './cart.css';
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
 export const Cart = () => {
   
@@ -14,11 +15,56 @@ export const Cart = () => {
   const [tokenRefreshed, setTokenRefreshed] = useState(false);
   const [isConfirmationOpen, setConfirmationOpen] = useState(false);
   const [isFormOpen, setFormOpen] = useState(false);
+  const [show, setShow] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     address: '',
   });
+  
+  const [orderID, setOrderID] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [ErrorMessage, setErrorMessage] = useState("");
+
+  const createOrder = (data, actions) => {
+    
+    return actions.order.create({
+        purchase_units: [
+            {
+                description: "Order",
+                amount: {
+                    currency_code: "USD",
+                    value: calculateTotalPrice(),
+                },
+            },
+        ],
+    }).then((orderID) => {
+            setOrderID(orderID);
+            return orderID;
+        });
+};
+
+
+const onApprove = (data, actions) => {
+    return actions.order.capture().then(function (details) {
+        const { payer } = details;
+        setSuccess(true);
+    });
+};
+
+//capture likely error
+const onError = (data, actions) => {
+    setErrorMessage("An Error occured with your payment ");
+};
+
+useEffect(() => {
+    if (success) {
+    
+        alert("Payment successful!!");
+        console.log('Order successful. Your order id is--', orderID);
+        handleFormSubmit()
+    }
+},[success]);
 
   const isProductOutOfStock = (item) => {
     return item.details && item.details.quantity === 0;
@@ -332,9 +378,10 @@ if (updatedGuestCart.items && updatedGuestCart.items[index]) {
   };
 
   const handleFormSubmit = async (e) => {
-    e.preventDefault();
-  
-    // Generate a random user ID for guest orders
+    if (e) {
+      e.preventDefault();
+    }
+    
     const guestUserId = generateRandomUserId();
   
     try {
@@ -351,7 +398,8 @@ if (updatedGuestCart.items && updatedGuestCart.items[index]) {
           items: cartItemsToOrder,
           total: calculateTotalPrice(),
           shippingAddress: formData.address,
-          isGuest:isAuthenticated ? false : true,
+          isGuest: isAuthenticated ? false : true,
+          paypalOrderID: orderID,
         }),
       });
   
@@ -376,6 +424,8 @@ if (updatedGuestCart.items && updatedGuestCart.items[index]) {
     } catch (error) {
       console.error('Error placing order:', error);
     }
+    sendInvoiceEmail(formData.email, orderID, cart, calculateTotalPrice(), formData);
+
   };
   
 
@@ -401,9 +451,50 @@ if (updatedGuestCart.items && updatedGuestCart.items[index]) {
     navigate('/cart');
   };
 
+  const sendInvoiceEmail =async (toEmail, orderID, cart, total, user) => {
+    const response = await fetch('http://localhost:4000/sendInvoice', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        recipientEmail: formData.email,
+        subject: 'Your Order Invoice',
+        text: 'Thank you for your order. Here is your invoice.',
+        html:`
+        <h2>Order Invoice</h2>
+        <p>Order ID: ${orderID}</p>
+        <p>User: ${user.name}</p>
+        <p>Email: ${user.email}</p>
+        <h3>Ordered Items:</h3>
+        <ul>
+          ${cart.items.map((item) => `
+            <li>
+              Product: ${item.details.name}<br>
+              Quantity: ${item.quantity}<br>
+              Price: $${item.details.price * item.quantity.toFixed(2)}<br>
+            </li>
+          `).join('')}
+        </ul>
+        <h3>Total Amount: $${total}</h3>
+        <p>Shipping Address: ${user.address}</p>
+      `,
+      }),
+    });
+
+    if (response.ok) {
+      alert('Invoice sent successfully!');
+      console.log('Invoice email sent');
+    } else {
+      alert('Failed to send invoice.');
+      console.error('Error sending invoice email');
+    }
+  };
   
 
   return (
+    <PayPalScriptProvider options={{ "client-id": 'AeztmHPSoQhDV4kfDHvsUFzPOkeBPnVded3_5O5VnJ5iOIlc2JMhz_tQbG6w6FI7EKGNdydq8Zw22Vnd'}}>
+
     <div>
       <Navbar />
       <div className="cart-page">
@@ -519,7 +610,7 @@ if (updatedGuestCart.items && updatedGuestCart.items[index]) {
         <div className="overlay">
           <div className="form-dialog">
             <h2>Enter Your Information</h2>
-            <form onSubmit={handleFormSubmit}>
+            <form>
               <div className="form-group">
                 <label htmlFor="name">Name:</label>
                 <input
@@ -564,14 +655,18 @@ if (updatedGuestCart.items && updatedGuestCart.items[index]) {
                 <button className="back-button" onClick={handleGoBackToCart}>
                   Back to Cart
                 </button>
-                <button className="submit-button" onClick={handleFormSubmit}>
-                  Submit
-                </button>
+                <PayPalButtons
+          style={{ layout: "vertical" }}
+          createOrder={createOrder}
+          onApprove={onApprove}
+        />
               </div>
             </form>
           </div>
         </div>
       )}
+      
     </div>
+    </PayPalScriptProvider>
   );
 };

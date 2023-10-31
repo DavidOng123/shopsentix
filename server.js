@@ -263,6 +263,48 @@ app.post('/forgot-password', async (req, res) => {
   }
 });
 
+app.post('/sendInvoice', async (req, res) => {
+  try {
+    const { recipientEmail, subject, text, html } = req.body;
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      service: 'gmail', 
+      auth: {
+        user: "ong112345678@gmail.com",
+        pass: "rbtrlmadkhmbahmg",
+      },
+    });
+    
+    const mailOptions = {
+      from: 'your-email@gmail.com',
+      to: recipientEmail,
+      subject: subject,
+      text: text,
+      html: html, // HTML content for the email
+    };
+
+   
+    transporter.sendMail(mailOptions, function(error,info) {
+      if (error) {
+        console.error('Error sending email:', error);
+      }
+      else{
+        console.log('Email sent: ' + info.response);
+      }
+
+    });
+
+    res.status(200).json({ message: 'Email sent successfully!' });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    res.status(500).json({ error: 'Failed to send email' });
+  }
+});
+
+
 app.get('/reset-password/:id/:token', async (req, res) => {
   const { id,token } = req.params;
 
@@ -615,27 +657,9 @@ app.post('/remove-from-cart',authenticateToken, async (req, res) => {
 
 app.post('/order', async (req, res) => {
   try {
-    const { user, items, shippingAddress, total, isGuest } = req.body;
+    const { user, items, shippingAddress, total, isGuest, paypalOrderID } = req.body;
     console.log('user:'+user+'\nitems:'+items+'\nshippingAddress:'+shippingAddress+'\ntotal:'+total)
-    
-    const instance=new Razorpay({
-      key_id:process.env.RAZORPAY_KEY_ID,
-      key_secret:process.env.RAZORPAY_SECRET
-    })
 
-    const options={
-      amount:total,
-      currency:"MYR",
-      receipt:crypto.randomBytes(10).toString("hex")
-    }
-
-    instance.orders.create(options,(error,order)=>{
-      if(error){
-        console.log(error)
-
-      }
-      console.log("Razor:"+JSON.stringify(order))
-    })
 
     const order = new OrderModel({
       user: user, // Assuming user is already authenticated and you have the user ID available
@@ -643,6 +667,7 @@ app.post('/order', async (req, res) => {
       total:total,
       shippingAddress:shippingAddress,
       isGuest:isGuest,
+      paypalOrderID:paypalOrderID
     });
 
     for (const item of items) {
@@ -736,8 +761,8 @@ app.get('/uniqueProductNames', async (req, res) => {
 // Check if a user has purchased a specific product
 app.get('/check-purchase/:id', authenticateToken,async (req, res) => {
   try {
-    const productId = req.params.id; // Product ID to check
-    const userId = req.user.id; // Assuming user is authenticated and user ID is available
+    const productId = req.params.id;
+    const userId = req.user.id; 
 
     // Check if the user has purchased the product
     const hasPurchased = await OrderModel.exists({
@@ -853,10 +878,8 @@ app.get('/most-popular-product', async (req, res) => {
   try {
     const orders = await OrderModel.find();
     
-    // Create a map to count the number of purchases for each product
     const productCountMap = new Map();
 
-    // Count the purchases for each product
     orders.forEach((order) => {
       order.items.forEach((item) => {
         const productId = item.product.toString();
@@ -868,7 +891,6 @@ app.get('/most-popular-product', async (req, res) => {
       });
     });
 
-    // Find the product with the most purchases
     let mostPopularProductId = null;
     let mostPopularProductCount = 0;
 
@@ -896,10 +918,8 @@ app.get('/suggested-product', async (req, res) => {
   try {
     const orders = await OrderModel.find();
     
-    // Create a map to count the number of purchases for each product
     const productCountMap = new Map();
 
-    // Count the purchases for each product
     orders.forEach((order) => {
       order.items.forEach((item) => {
         const productId = item.product.toString();
@@ -911,7 +931,6 @@ app.get('/suggested-product', async (req, res) => {
       });
     });
 
-    // Find the products that have no purchases and are available
     const productsWithNoPurchases = [];
     const allProducts = await ProductModel.find();
 
@@ -923,19 +942,16 @@ app.get('/suggested-product', async (req, res) => {
     });
 
     if (productsWithNoPurchases.length > 0) {
-      // If there are available products with no purchases, suggest one randomly
       const randomProductIndex = Math.floor(Math.random() * productsWithNoPurchases.length);
       const suggestedProduct = productsWithNoPurchases[randomProductIndex];
       return res.json(suggestedProduct);
     } else {
-      // If all available products have been purchased, return a random available product
       const availableProducts = allProducts.filter(product => product.available);
       if (availableProducts.length > 0) {
         const randomProductIndex = Math.floor(Math.random() * availableProducts.length);
         const suggestedProduct = availableProducts[randomProductIndex];
         return res.json(suggestedProduct);
       } else {
-        // If there are no available products, return an empty response or an appropriate message
         return res.json({});
       }
     }
