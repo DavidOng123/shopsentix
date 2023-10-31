@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const app = express()
 const jwt = require('jsonwebtoken')
+const Razorpay=require('razorpay')
 const crypto=require('crypto');
 const bcrypt = require('bcrypt');
 const { body, validationResult } = require('express-validator');
@@ -42,6 +43,7 @@ app.use(bodyParser.json());
 
 
 const { UserModel , ProductModel, CartModel, OrderModel, ReviewModel, FavoriteModel} = require('./db');
+const { error } = require('console');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -155,8 +157,9 @@ app.post('/token', async (req, res) => {
     try {
       const user = await UserModel.findOne({ refreshToken });
       if (!user) return res.sendStatus(403);
-    
-      const accessToken = generateAccessToken({ id:user._id,email: user.email, username: user.username, role:user.role });
+      const payload = {id:user._id, email: user.email, phone: user.phoneNumber, username: user.username, address:user.address, role:user.role };
+
+      const accessToken = generateAccessToken(payload);
       res.json({ accessToken:accessToken });
     } catch (error) {
       console.error(error);
@@ -199,10 +202,8 @@ app.post('/login', async (req, res) => {
     const refreshToken = generateRefreshToken(payload);
    
     user.refreshToken = refreshToken;
-    await user.save();
 
-    res.cookie('access_token', accessToken, { httpOnly: true });
-    res.cookie('refresh_token', refreshToken, { httpOnly: true });
+    await user.save();
     res.json({ accessToken, refreshToken });
 
   } catch (error) {
@@ -261,6 +262,48 @@ app.post('/forgot-password', async (req, res) => {
     res.status(500).json({ message: 'Password reset request failed. Please try again.' });
   }
 });
+
+app.post('/sendInvoice', async (req, res) => {
+  try {
+    const { recipientEmail, subject, text, html } = req.body;
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      service: 'gmail', 
+      auth: {
+        user: "ong112345678@gmail.com",
+        pass: "rbtrlmadkhmbahmg",
+      },
+    });
+    
+    const mailOptions = {
+      from: 'your-email@gmail.com',
+      to: recipientEmail,
+      subject: subject,
+      text: text,
+      html: html, // HTML content for the email
+    };
+
+   
+    transporter.sendMail(mailOptions, function(error,info) {
+      if (error) {
+        console.error('Error sending email:', error);
+      }
+      else{
+        console.log('Email sent: ' + info.response);
+      }
+
+    });
+
+    res.status(200).json({ message: 'Email sent successfully!' });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    res.status(500).json({ error: 'Failed to send email' });
+  }
+});
+
 
 app.get('/reset-password/:id/:token', async (req, res) => {
   const { id,token } = req.params;
@@ -394,7 +437,6 @@ app.post('/products/:productId', async (req, res) => {
     quantity
   } = req.body;
 
-  // Find the product by ID (replace this with your database query)
   try {
     const productToUpdate = await ProductModel.findOne({ _id: productId });
     
@@ -522,7 +564,6 @@ app.post('/add-to-cart', authenticateToken, async (req, res) => {
       }
     }
 
-    // Save the cart to the database
     await userCart.save();
 
     res.status(200).json({ message: 'Product added to the cart' });
@@ -542,30 +583,24 @@ app.post('/update-cart', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'Invalid quantity' });
     }
 
-    // Check if the user already has a cart
     let userCart = await CartModel.findOne({ user: userId });
 
     if (!userCart) {
-      // If the user doesn't have a cart, create a new one
       userCart = new CartModel({
         user: userId,
         items: [{ product: productId, quantity: parsedQuantity, attribute:attribute }],
       });
     } else {
-      // If the user already has a cart, add the item or update its quantity
       const existingItem = userCart.items.find((item) => item.product === productId);
 
       if (existingItem) {
-        // Update the quantity if the product is already in the cart
         existingItem.quantity = parsedQuantity;
         existingItem.attribute=attribute;
       } else {
-        // Add the product to the cart if it's not already there
         userCart.items.push({ product: productId, quantity: parsedQuantity , attribute:attribute});
       }
     }
 
-    // Save the cart to the database
     await userCart.save();
 
     res.status(200).json({ message: 'Product added to the cart' });
@@ -594,20 +629,18 @@ app.post('/remove-from-cart',authenticateToken, async (req, res) => {
 
 
   try {
-    // Find the user's cart based on their user ID
+   
     const userCart = await CartModel.findOne({ user: userId });
 
     if (!userCart) {
       return res.status(404).json({ error: 'User cart not found' });
     }
 
-    // Find the index of the item in the user's cart
     const itemIndex = userCart.items.findIndex((item) => {
       return item.product === productId && item.attribute === attribute;
     });
 
     if (itemIndex !== -1) {
-      // Remove the item from the user's cart
       userCart.items.splice(itemIndex, 1);
 
       // Save the updated user cart
@@ -624,21 +657,19 @@ app.post('/remove-from-cart',authenticateToken, async (req, res) => {
 
 app.post('/order', async (req, res) => {
   try {
-    const { user, items, shippingAddress, total, isGuest } = req.body;
+    const { user, items, shippingAddress, total, isGuest, paypalOrderID } = req.body;
     console.log('user:'+user+'\nitems:'+items+'\nshippingAddress:'+shippingAddress+'\ntotal:'+total)
-    
-    
 
-    // Create the order
+
     const order = new OrderModel({
       user: user, // Assuming user is already authenticated and you have the user ID available
       items:items.map(item => ({ ...item, isReviewed: false })), 
       total:total,
       shippingAddress:shippingAddress,
       isGuest:isGuest,
+      paypalOrderID:paypalOrderID
     });
 
-    // Deduct product quantities from the inventory
     for (const item of items) {
       const product = await ProductModel.findById(item.product);
 
@@ -654,7 +685,6 @@ app.post('/order', async (req, res) => {
       await product.save();
     }
 
-    // Save the order
     const savedOrder = await order.save();
 
     res.json(savedOrder);
@@ -664,11 +694,32 @@ app.post('/order', async (req, res) => {
   }
 });
 
+app.post('/verify',async (req,res)=>{
+  try{
+    const {razorpay_order_id,razorpay_payment_id, razorpay_signature}=req.body
+    const sign=razorpay_order_id+"|"+razorpay_payment_id
+    const expectedSign=crypto.createHmac("sha256",process.env.RAZORPAY_SECRET).update(sign.toString()).digest("hex")
+
+    if(razorpay_signature===expectedSign){
+      res.status(200).json({ message: 'Payment verified' });
+    }else{
+      res.status(400).json({ message: 'Payment not verified' });
+    }
+
+
+  }catch(error){
+console.log(error)
+res.status(500).json({ error: 'internal server error' });
+  }
+  
+
+});
+
 app.post('/clear-cart', authenticateToken, async (req, res) => {
   try {
    
-    const user = req.user; // Assuming that the authenticated user's information is stored in req.user
-    await CartModel.deleteMany({ user: user.id }); // Clear all cart items for the user
+    const user = req.user; 
+    await CartModel.deleteMany({ user: user.id }); 
 
     res.json({ message: 'Cart cleared successfully' });
   } catch (error) {
@@ -710,8 +761,8 @@ app.get('/uniqueProductNames', async (req, res) => {
 // Check if a user has purchased a specific product
 app.get('/check-purchase/:id', authenticateToken,async (req, res) => {
   try {
-    const productId = req.params.id; // Product ID to check
-    const userId = req.user.id; // Assuming user is authenticated and user ID is available
+    const productId = req.params.id;
+    const userId = req.user.id; 
 
     // Check if the user has purchased the product
     const hasPurchased = await OrderModel.exists({
@@ -827,10 +878,8 @@ app.get('/most-popular-product', async (req, res) => {
   try {
     const orders = await OrderModel.find();
     
-    // Create a map to count the number of purchases for each product
     const productCountMap = new Map();
 
-    // Count the purchases for each product
     orders.forEach((order) => {
       order.items.forEach((item) => {
         const productId = item.product.toString();
@@ -842,7 +891,6 @@ app.get('/most-popular-product', async (req, res) => {
       });
     });
 
-    // Find the product with the most purchases
     let mostPopularProductId = null;
     let mostPopularProductCount = 0;
 
@@ -870,10 +918,8 @@ app.get('/suggested-product', async (req, res) => {
   try {
     const orders = await OrderModel.find();
     
-    // Create a map to count the number of purchases for each product
     const productCountMap = new Map();
 
-    // Count the purchases for each product
     orders.forEach((order) => {
       order.items.forEach((item) => {
         const productId = item.product.toString();
@@ -885,7 +931,6 @@ app.get('/suggested-product', async (req, res) => {
       });
     });
 
-    // Find the products that have no purchases and are available
     const productsWithNoPurchases = [];
     const allProducts = await ProductModel.find();
 
@@ -897,19 +942,16 @@ app.get('/suggested-product', async (req, res) => {
     });
 
     if (productsWithNoPurchases.length > 0) {
-      // If there are available products with no purchases, suggest one randomly
       const randomProductIndex = Math.floor(Math.random() * productsWithNoPurchases.length);
       const suggestedProduct = productsWithNoPurchases[randomProductIndex];
       return res.json(suggestedProduct);
     } else {
-      // If all available products have been purchased, return a random available product
       const availableProducts = allProducts.filter(product => product.available);
       if (availableProducts.length > 0) {
         const randomProductIndex = Math.floor(Math.random() * availableProducts.length);
         const suggestedProduct = availableProducts[randomProductIndex];
         return res.json(suggestedProduct);
       } else {
-        // If there are no available products, return an empty response or an appropriate message
         return res.json({});
       }
     }
@@ -1069,6 +1111,36 @@ app.get('/all-orders', async (req, res) => {
     }
   });
   
+app.patch('/update-profile', authenticateToken, async (req, res) => {
+  const userId = req.user.id; 
+  const { username, address, phone } = req.body;
+
+  try {
+    const user = await UserModel.findByIdAndUpdate(
+      userId,
+      { username, address, phone },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+    const payload = {id:user._id, email: user.email, phone: user.phoneNumber, username: user.username, address:user.address, role:user.role };
+    const accessToken = generateAccessToken(payload);
+
+   
+    const refreshToken = generateRefreshToken(payload);
+   
+    user.refreshToken = refreshToken;
+    
+    await user.save();
+    res.json({ accessToken, refreshToken });
+
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 function generateAccessToken(payload) {
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });

@@ -11,15 +11,8 @@ export const Navbar = () => {
     <div>
       <div id="main-navbar" className="navbar">
         <img src={logoImage} alt="Logo" className="logo" />
-        <h1 style={{ paddingInlineEnd: '20px' }}>ShopSentix</h1>
-        <div className="search-bar">
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search..."
-          />
-          <button className="search-button">&#128269;</button>
-        </div>
+        <h1 >ShopSentix</h1>
+       
         <nav>
           <ul>
             <li>

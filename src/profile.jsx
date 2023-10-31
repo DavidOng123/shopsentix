@@ -12,57 +12,114 @@ export const Profile = () => {
   const [purchasedItems, setPurchasedItems] = useState([]);
   const [activeTab, setActiveTab] = useState('profile');
   const [orders, setOrders] = useState([]);
-  const [comment, setComment] = useState(''); // Comment state
-  const [showCommentForm, setShowCommentForm] = useState(false); // State to show/hide the comment form
-  const [reviewData, setReviewData] = useState({ orderId: '', productId: '' }); // State to store review data
+  const [comment, setComment] = useState(''); 
+  const [showCommentForm, setShowCommentForm] = useState(false); 
+  const [reviewData, setReviewData] = useState({ orderId: '', productId: '' });
+  const [profileData, setProfileData] = useState({});
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
     } else {
-      const tokenExpiration = localStorage.getItem('tokenExpiration');
-      const currentTime = Date.now() / 1000;
-
-      if (tokenExpiration && currentTime > tokenExpiration) {
-        refreshAccessToken()
-          .then(() => {
+      setProfileData(user)
+      const checkAndRefreshToken = async () => {
+        const currentTime = Date.now() / 1000;
+        const tokenExpiration = localStorage.getItem('tokenExpiration');
+  
+        if (tokenExpiration && currentTime > tokenExpiration) {
+          try {
+            await refreshAccessToken();
             setTokenRefreshed(true);
-          })
-          .catch((error) => {
+          } catch (error) {
             console.error('Token refresh failed:', error);
             navigate('/login');
+          }
+        }
+      };
+  
+      checkAndRefreshToken();
+      const tokenCheckInterval = 15 * 60 * 1000; 
+      const tokenCheckIntervalId = setInterval(checkAndRefreshToken, tokenCheckInterval);
+      if (activeTab === 'purchases') {
+        fetch(`http://localhost:4000/orders/${user?.id}`)
+          .then((response) => response.json())
+          .then(async (data) => {
+            console.log('purchased item:'+data)
+            const ordersWithItems = await Promise.all(
+              data.map(async (order) => {
+                const items = order.items;
+                const itemsWithNames = await Promise.all(
+                  items.map(async (item) => {
+                    const response = await fetch(`http://localhost:4000/products/${item.product}`);
+                    const productData = await response.json();
+                    return { ...item, productName: productData.name, image: productData.file_name };
+                  })
+                );
+                return { ...order, items: itemsWithNames };
+              })
+            );
+            setOrders(ordersWithItems);
+          })
+          .catch((error) => {
+            console.error('Error fetching purchased items:', error);
           });
       }
+     
+      return () => {
+        clearInterval(tokenCheckIntervalId);
+      };
+    
     }
-    if (activeTab === 'purchases') {
-      // Make an API request to get the user's orders
-      fetch(`http://localhost:4000/orders/${user?.id}`)
-        .then((response) => response.json())
-        .then(async (data) => {
-          const ordersWithItems = await Promise.all(
-            data.map(async (order) => {
-              const items = order.items;
-              const itemsWithNames = await Promise.all(
-                items.map(async (item) => {
-                  const response = await fetch(`http://localhost:4000/products/${item.product}`);
-                  const productData = await response.json();
-                  return { ...item, productName: productData.name, image: productData.file_name };
-                })
-              );
-              return { ...order, items: itemsWithNames };
-            })
-          );
-          setOrders(ordersWithItems);
-        })
-        .catch((error) => {
-          console.error('Error fetching purchased items:', error);
-        });
-    }
-  }, [isAuthenticated, navigate, refreshAccessToken, activeTab, user?.id]);
+    
+  }, [isAuthenticated, navigate, refreshAccessToken, activeTab, user]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
+
+  const handleProfileChange = (field, value) => {
+    setProfileData({
+      ...profileData,
+      [field]: value,
+    });
+
+    updateProfileInDatabase(field, value);
+  };
+
+  const updateProfileInDatabase = (field, value) => {
+    // Send a PATCH request to update the profile data on the server
+    fetch('http://localhost:4000/update-profile', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ [field]: value }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json(); // Parse the JSON response
+        } else {
+          console.error(`Error updating profile ${field}:`, response.status);
+          throw new Error(`Error updating profile ${field}`);
+        }
+      })
+      .then((data) => {
+        const { accessToken, refreshToken } = data;
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        const expirationDurationInSeconds = 2 * 60 * 60;
+        const tokenExpiration = Math.floor(Date.now() / 1000) + expirationDurationInSeconds;
+        localStorage.setItem('tokenExpiration', tokenExpiration);
+  
+        console.log(`Profile ${field} updated successfully.`);
+      })
+      .catch((error) => {
+        console.error(`Error updating profile ${field}:`, error);
+      });
+  };
+  
+
 
   const markOrderAsReceived = async (orderId) => {
     try {
@@ -175,17 +232,45 @@ export const Profile = () => {
                 </button>
               </div>
             )}
-            {activeTab === 'edit' && (
-              <div className='edit-profile'>
-                {/* Add the form to edit user profile */}
-                <h2>Edit Your Profile</h2>
-                {/* Form fields for editing profile */}
+              {activeTab === 'edit' && (
+            <div className='edit-profile'>
+              <h2>Edit Your Profile</h2>
+              <div>
+                <label htmlFor='username'>Username:</label>
+                <input
+                  type='text'
+                  name='username'
+                  value={profileData.username}
+                  onChange={(e) => handleProfileChange('username', e.target.value)}
+                />
               </div>
-            )}
+              <div>
+                <label htmlFor='address'>Address:</label>
+                <input
+                  type='text'
+                  name='address'
+                  value={profileData.address}
+                  onChange={(e) => handleProfileChange('address', e.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor='phone'>Phone:</label>
+                <input
+                  type='text'
+                  name='phone'
+                  value={profileData.phone}
+                  onChange={(e) => handleProfileChange('phone', e.target.value)}
+                />
+              </div>
+              {/* Add more form fields for other profile information */}
+            </div>
+          )}
             {activeTab === 'purchases' && (
               <div className='purchased-items'>
                 <h2>Your Purchased Items</h2>
+                <div className="purchased-items-container">
                 <ul>
+
                   {orders.map((order, orderIndex) => (
                     <li key={orderIndex}>
                       <div className='order-details'>
@@ -241,6 +326,7 @@ export const Profile = () => {
                     </li>
                   ))}
                 </ul>
+                </div>
               </div>
             )}
           </div>

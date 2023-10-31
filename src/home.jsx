@@ -24,29 +24,32 @@ export const Home = () => {
 
   useEffect(() => {
   
-      const tokenExpiration = localStorage.getItem('tokenExpiration');
+    const checkAndRefreshToken = async () => {
       const currentTime = Date.now() / 1000;
-console.log('Token Expiration (Before Refresh):', tokenExpiration);
+      const tokenExpiration = localStorage.getItem('tokenExpiration');
 
       if (tokenExpiration && currentTime > tokenExpiration) {
-        refreshAccessToken()
-          .then(() => {
-            console.log('token refreshed');
-          })
-          .catch((error) => {
-            console.error('Token refresh failed:', error);
-            navigate('/login');
-          });
+        try {
+          await refreshAccessToken();
+          setTokenRefreshed(true);
+        } catch (error) {
+          console.error('Token refresh failed:', error);
+        }
       }
-      console.log('Authorized user')
-      
-console.log('Token Expiration (After Refresh):', localStorage.getItem('tokenExpiration'));
+    };
+
+    checkAndRefreshToken();
+    const tokenCheckInterval = 15 * 60 * 1000; 
+    const tokenCheckIntervalId = setInterval(checkAndRefreshToken, tokenCheckInterval);
+  return () => {
+        clearInterval(tokenCheckIntervalId);
+      };
     
-    fetchProducts();
+ 
   }, [isAuthenticated, navigate, refreshAccessToken]);
 
   useEffect(() => {
-    // Fetch products from the three different APIs
+    fetchProducts();
     fetchTopRatedProducts();
     fetchSuggestedProducts();
     fetchMostPopularProducts();
