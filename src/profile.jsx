@@ -16,6 +16,8 @@ export const Profile = () => {
   const [showCommentForm, setShowCommentForm] = useState(false); 
   const [reviewData, setReviewData] = useState({ orderId: '', productId: '' });
   const [profileData, setProfileData] = useState({});
+  const [filterStatus, setFilterStatus] = useState('all'); 
+
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -40,11 +42,20 @@ export const Profile = () => {
       checkAndRefreshToken();
       const tokenCheckInterval = 15 * 60 * 1000; 
       const tokenCheckIntervalId = setInterval(checkAndRefreshToken, tokenCheckInterval);
+
+      const sortOrdersByTime = (orders) => {
+        return orders.slice().sort((a, b) => {
+          const timeA = new Date(a.orderDate);
+          const timeB = new Date(b.orderDate);
+          return timeB - timeA; 
+        });
+      };
+
       if (activeTab === 'purchases') {
         fetch(`http://localhost:4000/orders/${user?.id}`)
           .then((response) => response.json())
           .then(async (data) => {
-            console.log('purchased item:'+data)
+            console.log('purchased item:' + data);
             const ordersWithItems = await Promise.all(
               data.map(async (order) => {
                 const items = order.items;
@@ -58,7 +69,8 @@ export const Profile = () => {
                 return { ...order, items: itemsWithNames };
               })
             );
-            setOrders(ordersWithItems);
+            const sortedOrders = sortOrdersByTime(ordersWithItems); 
+            setOrders(sortedOrders);
           })
           .catch((error) => {
             console.error('Error fetching purchased items:', error);
@@ -87,7 +99,6 @@ export const Profile = () => {
   };
 
   const updateProfileInDatabase = (field, value) => {
-    // Send a PATCH request to update the profile data on the server
     fetch('http://localhost:4000/update-profile', {
       method: 'PATCH',
       headers: {
@@ -98,7 +109,7 @@ export const Profile = () => {
     })
       .then((response) => {
         if (response.ok) {
-          return response.json(); // Parse the JSON response
+          return response.json(); 
         } else {
           console.error(`Error updating profile ${field}:`, response.status);
           throw new Error(`Error updating profile ${field}`);
@@ -142,11 +153,9 @@ export const Profile = () => {
   };
 
   const handleLeaveReview = (orderId, productId) => {
-    // Set the comment state and display a comment form
     setComment('');
     setShowCommentForm(true);
 
-    // Save order and product IDs for later use
     setReviewData({ orderId, productId });
   };
 
@@ -165,11 +174,10 @@ export const Profile = () => {
       });
 
       if (response.ok) {
-        // After posting a review successfully, update the review status
         await updateReviewStatus(reviewData.orderId, reviewData.productId);
         console.log('Review posted successfully.');
         setComment('');
-        setShowCommentForm(false); // Close the comment form
+        setShowCommentForm(false); 
       } else {
         console.error('Error posting review:', response.status);
       }
@@ -262,71 +270,99 @@ export const Profile = () => {
                   onChange={(e) => handleProfileChange('phone', e.target.value)}
                 />
               </div>
-              {/* Add more form fields for other profile information */}
             </div>
           )}
             {activeTab === 'purchases' && (
               <div className='purchased-items'>
                 <h2>Your Purchased Items</h2>
-                <div className="purchased-items-container">
-                <ul>
-
-                  {orders.map((order, orderIndex) => (
-                    <li key={orderIndex}>
-                      <div className='order-details'>
-                        <p>Order Date: {new Date(order.orderDate).toLocaleDateString()}</p>
-                        <p>Order Status: {order.status}</p>
-                      </div>
-                      <ul className='purchased-items-list'>
-                        {order.items.map((item, itemIndex) => (
-                          <li key={itemIndex}>
-                              <div className='purchased-item'>
-                                <div className='purchased-item-details'>
-                                  <strong>Product: {item.productName}</strong>
-                                  <div className='product-image'>
-                                    {item.image && (
-                                      <img
-                                        src={`http://localhost:4000/uploads/${item.image}`}
-                                        alt={item.productName}
-                                      />
-                                    )}
-                                  </div>
-                                  <p>Quantity: {item.quantity}</p>
-                                  <p>Attribute: {item.attribute}</p>
-                                  {order.status === 'completed' && !item.isReviewed && (
-                                    <>
-                                      <button onClick={() => handleLeaveReview(order._id, item.product)}>
-                                        Leave Review
-                                      </button>
-                                      {item.isReviewed && (
-  <p>You've already left a review for this product.</p>
-)}
-                                      {showCommentForm && reviewData.orderId === order._id && reviewData.productId === item.product && (
-                                        <div className='comment-form'>
-                                          <textarea
-                                            value={comment}
-                                            onChange={(e) => setComment(e.target.value)}
-                                            placeholder='Write your review here...'
-                                          />
-                                          <button onClick={handleSubmitReview}>Submit Review</button>
-                                        </div>
-                                      )}
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                          </li>
-                        ))}
-                      </ul>
-                      {order.status !== 'completed' && (
-                        <button onClick={() => markOrderAsReceived(order._id)} className='mark-received-button'>
-                          Mark Received
-                        </button>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                <div className="filter-buttons">
+                  <button
+                    className={`filter-button ${filterStatus === 'all' ? 'active' : ''}`}
+                    onClick={() => setFilterStatus('all')}
+                  >
+                    All
+                  </button>
+                  <button
+                    className={`filter-button ${filterStatus === 'preparing' ? 'active' : ''}`}
+                    onClick={() => setFilterStatus('preparing')}
+                  >
+                    Preparing
+                  </button>
+                  <button
+                    className={`filter-button ${filterStatus === 'processing' ? 'active' : ''}`}
+                    onClick={() => setFilterStatus('processing')}
+                  >
+                    Processing
+                  </button>
+                  <button
+                    className={`filter-button ${filterStatus === 'completed' ? 'active' : ''}`}
+                    onClick={() => setFilterStatus('completed')}
+                  >
+                    Completed
+                  </button>
                 </div>
+                <br></br><br></br>
+                <div className="purchased-items-container">
+  {orders
+    .filter((order) => {
+      if (filterStatus === 'all') return true;
+      return order.status.toLowerCase() === filterStatus;
+    })
+    .map((order, orderIndex) => (
+      <div key={orderIndex} className="purchased-item-box">
+        <div className='order-details'>
+          <p>Order Date: {new Date(order.orderDate).toLocaleDateString()}</p>
+          <p>Order Status: {order.status}</p>
+        </div>
+        <div className='purchased-items-list'>
+          {order.items.map((item, itemIndex) => (
+            <div key={itemIndex} className="purchased-item">
+              <div className='purchased-item-details'>
+                <strong>Product: {item.productName}</strong>
+                <div className='product-image'>
+                  {item.image && (
+                    <img
+                      src={`http://localhost:4000/uploads/${item.image}`}
+                      alt={item.productName}
+                    />
+                  )}
+                </div>
+                <p>Quantity: {item.quantity}</p>
+                <p>Attribute: {item.attribute}</p>
+                <p>Total: ${order.total}</p>
+                {order.status === 'completed' && !item.isReviewed &&(
+                  <>
+                    <button className='comment-button' onClick={() => handleLeaveReview(order._id, item.product)}>
+                      Leave Review
+                    </button>
+                    {item.isReviewed && (
+                      <p>You've already left a review for this product.</p>
+                    )}
+                    {showCommentForm && reviewData.orderId === order._id && reviewData.productId === item.product && (
+                      <div className='comment-form'>
+                        <textarea
+                          value={comment}
+                          onChange={(e) => setComment(e.target.value)}
+                          placeholder='Write your review here...'
+                        />
+                        <button onClick={handleSubmitReview}>Submit Review</button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        {order.status !== 'completed' && (
+          <button onClick={() => markOrderAsReceived(order._id)} className='mark-received-button'>
+            Mark Received
+          </button>
+        )}
+      </div>
+    ))}
+</div>
+
               </div>
             )}
           </div>

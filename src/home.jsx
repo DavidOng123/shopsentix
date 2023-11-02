@@ -19,6 +19,7 @@ export const Home = () => {
   const [topRatedProducts, setTopRatedProducts] = useState([]);
   const [suggestedProducts, setSuggestedProducts] = useState([]);
   const [mostPopularProducts, setMostPopularProducts] = useState([]);
+  const [carouselData, setCarouselData] = useState([]);
 
  
 
@@ -49,6 +50,7 @@ export const Home = () => {
   }, [isAuthenticated, navigate, refreshAccessToken]);
 
   useEffect(() => {
+    fetchCarouselData(); 
     fetchProducts();
     fetchTopRatedProducts();
     fetchSuggestedProducts();
@@ -126,6 +128,16 @@ export const Home = () => {
     return emailRegex.test(email);
   };
 
+  const fetchCarouselData = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/getCarousel');
+      const data = await response.json();
+      setCarouselData(data);
+    } catch (error) {
+      console.error('Error fetching carousel data:', error);
+    }
+  };
+
 
   const fetchTopRatedProducts = async () => {
     try {
@@ -162,9 +174,10 @@ export const Home = () => {
     setSelectedCategory(category);
 
     if (category === 'all') {
-      setFilteredProducts(products);
+      const filtered = products.slice(0, 3); // Limit to 3 products
+      setFilteredProducts(filtered);
     } else {
-      const filtered = products.filter((product) => product.category === category);
+      const filtered = products.filter((product) => product.category === category).slice(0, 3);
       setFilteredProducts(filtered);
     }
   };
@@ -175,7 +188,7 @@ export const Home = () => {
       const product = await response.json();
       
 
-      const data = product.filter((product) => product.available === true).map((product) => ({
+      const data = product.filter((product) => product.available === true).slice(0, 3).map((product) => ({
         ...product,
         imageUrl: `http://localhost:4000/uploads/${product.file_name}`,
       }));
@@ -193,9 +206,17 @@ export const Home = () => {
       
       <div className='content-container'>
         <div className='content'>
+        <header className="main-header">
+              <h1>Promotions</h1>
+            </header>
           <div className="carousel-container">
-            <Carousel autoPlay infiniteLoop showStatus={false} showThumbs={false} interval={5000}>
-              {/* Carousel items */}
+          <Carousel autoPlay infiniteLoop showStatus={false} showThumbs={false} interval={5000}>
+              {carouselData.map((carouselItem) => (
+                <div key={carouselItem._id} >
+                  <img src={carouselItem.imageUrl} alt={carouselItem.caption} />
+                  <p>{carouselItem.caption}</p>
+                </div>
+              ))}
             </Carousel>
           </div>
          
@@ -263,9 +284,9 @@ export const Home = () => {
             </button>
           </div>
         
-          <div className="product-list">
+          <div className="popular-category">
   {filteredProducts.map((product) => (
-    <div className="product-card" key={product._id}>
+    <div className="product" key={product._id}>
       {product.quantity === 0 ? ( 
         <div>
           <div className="product-image">
@@ -292,6 +313,9 @@ export const Home = () => {
   ))}
 </div>
 
+<Link to='/product' className="explore-link">
+                    Explore more
+                  </Link>
 {isAuthenticated ? null : (
   
               <div className='loginbox'>

@@ -111,6 +111,14 @@ const favoriteSchema = new mongoose.Schema({
   product: String
 });
 
+const carouselItemSchema = new mongoose.Schema({
+  imageUrl: String,
+  caption: String,
+});
+
+const CarouselModel = mongoose.model('Carousel', carouselItemSchema);
+
+
 const CartModel = mongoose.model('Cart', cartSchema);
 const UserModel = mongoose.model('User', userSchema);
 const ProductModel = mongoose.model('Product', productSchema);
@@ -120,6 +128,7 @@ const FavoriteModel=mongoose.model('Favorite', favoriteSchema)
 
 
 module.exports = {
+  CarouselModel,
   UserModel,
   ProductModel,
   CartModel,

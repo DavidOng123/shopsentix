@@ -16,6 +16,8 @@ export const EditProduct = () => {
     const [newProduct, setNewProduct] = useState({}); 
     const [categories, setCategories] = useState(['Clothing', 'Electronic', 'Accessories']);
     const [showImageUpload, setShowImageUpload] = useState(false);
+    
+    const isAdmin = user?.role === 'Admin';
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -66,17 +68,17 @@ export const EditProduct = () => {
       };
   
 
-  // if (!isAdmin) {
-  //   return (
-  //     <div>
-  //       <AdminHeader />
-  //       <div className="admin-dashboard-container">
-  //         <p>You don't have access to this page.</p>
-  //       </div>
-  //       <AdminFooter />
-  //     </div>
-  //   );
-  // }  
+  if (!isAdmin) {
+    return (
+      <div>
+        <AdminHeader />
+        <div className="admin-dashboard-container">
+          <p>You don't have access to this page.</p>
+        </div>
+        <AdminFooter />
+      </div>
+    );
+  }  
 
   return (
     <div>

@@ -13,19 +13,18 @@ export const ProductManagement = () => {
     price: '',
     description: '',
     category: '',
-    attributes: [], // Allow custom attributes
+    attributes: [], 
     image: null,
-    quantity: '', // New quantity field
+    quantity: '', 
   });
   const [categories, setCategories] = useState(['Clothing', 'Electronic', 'Accessories']);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const { user } = useAuth(); 
   console.log(user)
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'Admin';
 
   const deleteProduct = async (productId) => {
-    // Use window.confirm to prompt the user for confirmation
     const shouldDelete = window.confirm('Are you sure you want to delete this product?');
 
     if (shouldDelete) {
@@ -99,7 +98,7 @@ export const ProductManagement = () => {
         const response = await axios.get('http://localhost:4000/products'); // Update the URL to match your server's endpoint
         if (response.status === 200) {
           const productsData = response.data;
-          setProducts(productsData);
+          setProducts(productsData.filter((product) => product.available));
         } else {
           console.error('Failed to fetch products:', response.status);
         }
@@ -110,17 +109,17 @@ export const ProductManagement = () => {
     fetchProducts();
   }, []);
 
-  // if (!isAdmin) {
-  //   return (
-  //     <div>
-  //       <AdminHeader />
-  //       <div className="admin-dashboard-container">
-  //         <p>You don't have access to this page.</p>
-  //       </div>
-  //       <AdminFooter />
-  //     </div>
-  //   );
-  // }  
+  if (!isAdmin) {
+    return (
+      <div>
+        <AdminHeader />
+        <div className="admin-dashboard-container">
+          <p>You don't have access to this page.</p>
+        </div>
+        <AdminFooter />
+      </div>
+    );
+  }  
 
   return (
     <div>

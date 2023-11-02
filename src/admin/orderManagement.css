@@ -3,6 +3,8 @@
     flex-direction: column;
     align-items: center;
     padding: 20px;
+    min-height: 100vh;
+    position: relative;
   }
   
   .order-card {
@@ -58,5 +60,24 @@
     padding: 5px;
     border: 1px solid #ccc;
     border-radius: 3px;
+  }
+
+  .filter-buttons {
+    display: flex;
+    gap: 10px; /* Adjust the gap between buttons as needed */
+  }
+  
+  .filter-button {
+    background-color: #f0f0f0; /* Button background color */
+    color: #333; /* Button text color */
+    padding: 8px 16px; /* Button padding */
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .filter-button.active {
+    background-color: #007bff; /* Active button background color */
+    color: #fff; /* Active button text color */
   }
   

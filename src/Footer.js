@@ -7,7 +7,7 @@ export const Footer = () => {
     <div>
       <div className="footer">
         <p>&copy; 2023 ShopSentix</p>
-        <Link to="/admin-login">Admin Login</Link> 
+        <Link to="/admin/adminLogin">Admin Login</Link> 
       </div>
     </div>
   );

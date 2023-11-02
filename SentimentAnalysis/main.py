@@ -43,6 +43,8 @@ def cleaning_numbers(data):
 def cleaning_URLs(data):
     return re.sub('((www.[^s]+)|([^s]+.com)|(https?://[^s]+))', '', data)
 
+
+
 train_df = pd.read_csv("/fyp/Sentiment data/twitter_training.csv", header=None)
 train_df2 = pd.read_csv("/fyp/Sentiment data/amazon_reviews.csv")
 columns_to_keep = ['overall', 'reviewText']
@@ -77,6 +79,31 @@ train_df['Sentence'] = train_df['Sentence'].apply(clean_text)
 train_df['Sentence'] = train_df['Sentence'].apply(cleaning_URLs)
 pattern_to_remove = r'\S+@\S+'
 train_df['Sentence'] = train_df['Sentence'].str.replace(pattern_to_remove, '', regex=True)
+
+def rule_based_sentiment(text):
+    positive_keywords = ["good", "great", "excellent", "like", "love"]
+    negative_keywords = ["bad", "terrible", "awful", "dislike", "sucks"]
+
+    # Count the number of positive and negative keywords in the text
+    num_positive_keywords = sum(1 for keyword in positive_keywords if keyword in text)
+    num_negative_keywords = sum(1 for keyword in negative_keywords if keyword in text)
+
+    if num_positive_keywords > num_negative_keywords:
+        return 'positive'
+    elif num_negative_keywords > num_positive_keywords:
+        return 'negative'
+    else:
+        return 'neutral'
+
+def apply_rule_based_sentiment_to_neutral(row):
+    if row['Sentiment'] == 'Neutral':
+        return rule_based_sentiment(row['Sentence'])
+    else:
+        return row['Sentiment']
+
+
+train_df['Sentiment'] = train_df.apply(apply_rule_based_sentiment_to_neutral, axis=1)
+
 test_df['Sentence'] = test_df['Sentence'].apply(cleaning_numbers)
 test_df['Sentence'] = test_df['Sentence'].apply(clean_text)
 test_df['Sentence'] = test_df['Sentence'].apply(cleaning_URLs)

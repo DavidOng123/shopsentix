@@ -23,7 +23,11 @@ export const ProductDetail = () => {
   const [loadingReviews, setLoadingReviews] = useState(true);
   const [hasPurchased, setHasPurchased] = useState(false); // Track if the user has purchased the product
   const [comment, setComment] = useState(''); 
-  const [guestCart, setGuestCart] = useState([]);
+  const [guestCart, setGuestCart] = useState([]);  
+  const [numReviewsToShow, setNumReviewsToShow] = useState(3);
+  const [showMoreReviews, setShowMoreReviews] = useState(false);
+
+ 
 
   useEffect(() => {
     async function fetchProduct() {
@@ -183,7 +187,14 @@ export const ProductDetail = () => {
     }
   };
   
+  const handleLoadMoreReviews = () => {
+    setNumReviewsToShow(numReviewsToShow + 3);
+  };
 
+  const handleShowMoreReviews = () => {
+    setShowMoreReviews(true);
+  };
+  
   return (
     <div className="product-detail-page">
       <Navbar />
@@ -231,13 +242,13 @@ export const ProductDetail = () => {
 </div>
 
 
-      <div className="product-reviews-container">
+<div className="product-reviews-container">
         <h3 className="reviews-title">Product Reviews</h3>
         {loadingReviews ? (
           <p className="loading-message">Loading reviews...</p>
         ) : reviews.length > 0 ? (
           <ul className="review-list">
-            {reviews.map((review, index) => (
+            {reviews.slice(0, numReviewsToShow).map((review, index) => (
               <li key={index} className="review-item">
                 <span className="review-user">
                   {review.user}:
@@ -253,7 +264,17 @@ export const ProductDetail = () => {
             Currently, there are no reviews for this product.
           </p>
         )}
+
+        {reviews.length > numReviewsToShow && !showMoreReviews && (
+          <div
+            className="load-more-reviews"
+            onClick={() => handleLoadMoreReviews()}
+          >
+            Load More Reviews
+          </div>
+        )}
       </div>
+
 
 
 {showDialog && (

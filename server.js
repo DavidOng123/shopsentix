@@ -42,7 +42,7 @@ app.use(bodyParser.json());
 
 
 
-const { UserModel , ProductModel, CartModel, OrderModel, ReviewModel, FavoriteModel} = require('./db');
+const { UserModel , ProductModel, CartModel, OrderModel, ReviewModel, FavoriteModel, CarouselModel,} = require('./db');
 const { error } = require('console');
 
 const storage = multer.diskStorage({
@@ -129,6 +129,55 @@ app.post(
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
       const role="User"
+
+      // Create a new user
+      const newUser = new UserModel({
+        username,
+        email,
+        password: hashedPassword,
+        phoneNumber,
+        address,
+        role
+      });
+
+      await newUser.save(); // Save the user to the database
+
+      res.status(201).json({ message: 'User registered successfully' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Registration failed' });
+    }
+  }
+);
+
+app.post(
+  '/adminRegister',
+  [
+    body('email').isEmail().normalizeEmail(),
+    body('password').isLength({ min: 6 }),
+  ],
+  async (req, res) => {
+    try {
+      const { email, password} = req.body;
+
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const existingUser = await UserModel.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email is already registered' });
+      }
+
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const role="Admin"
+
+      const username='Admin';
+      const phoneNumber="Admin"
+      const address="Admin"
+
 
       // Create a new user
       const newUser = new UserModel({
@@ -358,7 +407,6 @@ app.post('/products', upload.single('image'), async (req, res) => {
     const file_name = req.file.filename;
     const { name, price, description, category, attributes , quantity} = req.body;
 
-    // Parse the attributes value from JSON string to an array
     const parsedAttributes = JSON.parse(attributes);
 
     const newProduct = new ProductModel({
@@ -487,23 +535,19 @@ app.delete('/products/:productId', async (req, res) => {
   try {
     const { productId } = req.params;
 
-    // Step 1: Find the product
     const product = await ProductModel.findById(productId);
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Step 2: Check if the product exists in user carts and orders
     const usersWithProductInCart = await CartModel.find({ 'items.product': productId });
     const usersWithProductInOrders = await OrderModel.find({ 'items.product': productId });
 
-    // Step 3: If the product exists in either cart or orders, mark it as unavailable
     if (usersWithProductInCart.length > 0 || usersWithProductInOrders.length > 0) {
       product.available = false;
       await product.save();
       
-    // Step 5: Update user carts
     for (const cart of usersWithProductInCart) {
       // Remove the product from the cart and add it to the itemsUnavailable array
       cart.items = cart.items.filter(item => item.product.toString() !== productId);
@@ -511,7 +555,6 @@ app.delete('/products/:productId', async (req, res) => {
       await cart.save();
     }
     } else {
-      // Step 4: If the product doesn't exist in both cart and orders, delete it
       await product.deleteOne;
     }
 
@@ -542,7 +585,6 @@ app.post('/add-to-cart', authenticateToken, async (req, res) => {
       attribute: attribute,
     }));
     
-    // Check if the user already has a cart
     let userCart = await CartModel.findOne({ user: userId });
 
     if (!userCart) {
@@ -556,10 +598,8 @@ app.post('/add-to-cart', authenticateToken, async (req, res) => {
       const existingItem = userCart.items.find((item) => item.product === productId);
 
       if (existingItem) {
-        // Update the quantity if the product is already in the cart
         existingItem.quantity += parsedQuantity;
       } else {
-        // Add the product to the cart if it's not already there
         userCart.items.push({ product: productId, quantity: parsedQuantity, attribute:attribute });
       }
     }
@@ -643,7 +683,6 @@ app.post('/remove-from-cart',authenticateToken, async (req, res) => {
     if (itemIndex !== -1) {
       userCart.items.splice(itemIndex, 1);
 
-      // Save the updated user cart
       await userCart.save();
 
       return res.status(200).json({ message: 'Item removed from the cart' });
@@ -662,7 +701,7 @@ app.post('/order', async (req, res) => {
 
 
     const order = new OrderModel({
-      user: user, // Assuming user is already authenticated and you have the user ID available
+      user: user,
       items:items.map(item => ({ ...item, isReviewed: false })), 
       total:total,
       shippingAddress:shippingAddress,
@@ -742,10 +781,9 @@ app.get('/reviews/:productId', async (req, res) => {
 
 app.get('/uniqueProductNames', async (req, res) => {
   try {
-    // Retrieve unique product IDs from the Order table
+   
     const orderProductIds = await OrderModel.distinct('items.product');
 
-    // Fetch product names based on the unique product IDs
     const uniqueProductNames = await ProductModel.find({
       _id: { $in: orderProductIds },
     }).distinct('name');
@@ -764,7 +802,6 @@ app.get('/check-purchase/:id', authenticateToken,async (req, res) => {
     const productId = req.params.id;
     const userId = req.user.id; 
 
-    // Check if the user has purchased the product
     const hasPurchased = await OrderModel.exists({
       user: userId,
       'items.product': productId,
@@ -780,20 +817,18 @@ app.get('/check-purchase/:id', authenticateToken,async (req, res) => {
 // Post a product review
 app.post('/post-review', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.id; // Assuming user is authenticated and user ID is available
-    const { productId, comment } = req.body; // Product ID and review comment
+    const userId = req.user.id; 
+    const { productId, comment } = req.body; 
     console.log("UserID:"+userId+'\nProductId:'+productId+"\ncomment:"+comment)
 
    
 
-    // Create a new review
     const review = new ReviewModel({
       user: userId,
       product: productId,
       comment: comment,
     });
 
-    // Save the review to the database
     await review.save();
 
     res.json({ message: 'Review posted successfully' });
@@ -807,7 +842,6 @@ app.get('/orders/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
 
-    // Use Mongoose to find orders for the specified user
     const orders = await OrderModel.find({ user: userId });
 
     // Respond with the orders
@@ -833,20 +867,17 @@ app.get('/productSales', async (req, res) => {
       },
     ]);
 
-    // Map product _id to productName
     const productInfoPromises = productSales.map(async (sale) => {
       const product = await ProductModel.findById(sale._id);
       if (product) {
         sale.productName = product.name;
-        delete sale._id; // Remove the _id field
+        delete sale._id; 
       }
       return sale;
     });
 
-    // Wait for all product info requests to complete
     const productSalesWithNames = await Promise.all(productInfoPromises);
 
-    // Respond with the product sales data including product names
     res.json(productSalesWithNames);
     
     console.log(productSalesWithNames);
@@ -856,14 +887,146 @@ app.get('/productSales', async (req, res) => {
   }
 });
 
+app.get('/productYearlySales', async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear();
+
+    const yearlyProductSales = await OrderModel.aggregate([
+      {
+        $match: {
+          'orderDate': {
+            $gte: new Date(currentYear, 0, 1,0,0,0), // Start of the current year
+            $lte: new Date(currentYear, 11, 31, 23, 59, 59), // End of the current year
+          },
+        },
+      },
+      {
+        $unwind: '$items',
+      },
+      {
+        $group: {
+          _id: '$items.product',
+          quantitySold: { $sum: '$items.quantity' },
+        },
+      },
+    ]);
+
+      const productInfoPromises = yearlyProductSales.map(async (sale) => {
+      const product = await ProductModel.findById(sale._id);
+      if (product) {
+        sale.productName = product.name;
+        delete sale._id; 
+      }
+      return sale;
+    });
+
+    const productSalesWithNames = await Promise.all(productInfoPromises);
+
+    res.json(productSalesWithNames);
+  } catch (error) {
+    console.error('Error fetching yearly product sales:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Monthly Sales
+app.get('/productMonthlySales', async (req, res) => {
+  try {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    const monthlyProductSales = await OrderModel.aggregate([
+      {
+        $match: {
+          'orderDate': {
+            $gte: new Date(currentYear, currentMonth, 1,0,0,0), // Start of the current month
+            $lte: new Date(currentYear, currentMonth + 1, 0, 23, 59, 59), // End of the current month
+          },
+        },
+      },
+      {
+        $unwind: '$items',
+      },
+      {
+        $group: {
+          _id: '$items.product',
+          quantitySold: { $sum: '$items.quantity' },
+        },
+      },
+    ]);
+
+    const productInfoPromises = monthlyProductSales.map(async (sale) => {
+      const product = await ProductModel.findById(sale._id);
+      if (product) {
+        sale.productName = product.name;
+        delete sale._id; 
+      }
+      return sale;
+    });
+
+    const productSalesWithNames = await Promise.all(productInfoPromises);
+
+    res.json(productSalesWithNames);
+  } catch (error) {
+    console.error('Error fetching monthly product sales:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Daily Sales
+app.get('/productDailySales', async (req, res) => {
+  try {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const currentDay = now.getDate();
+
+    const dailyProductSales = await OrderModel.aggregate([
+      {
+        $match: {
+          'orderDate': {
+            $gte: new Date(currentYear, currentMonth, currentDay,0,0,0), // Start of the current day
+            $lte: new Date(currentYear, currentMonth, currentDay, 23, 59, 59), // End of the current day
+          },
+        },
+      },
+      {
+        $unwind: '$items',
+      },
+      {
+        $group: {
+          _id: '$items.product',
+          quantitySold: { $sum: '$items.quantity' },
+        },
+      },
+    ]);
+
+    const productInfoPromises = dailyProductSales.map(async (sale) => {
+      const product = await ProductModel.findById(sale._id);
+      if (product) {
+        sale.productName = product.name;
+        delete sale._id; 
+      }
+      return sale;
+    });
+
+    const productSalesWithNames = await Promise.all(productInfoPromises);
+
+    res.json(productSalesWithNames);
+  } catch (error) {
+    console.error('Error fetching daily product sales:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.get('/getProductIdByName/:name', async (req, res) => {
-  const productName = req.params.name; // Get product name from query parameter
+  const productName = req.params.name; 
 
   try {
     const product = await ProductModel.findOne({ name: productName });
 
     if (product) {
-      // If the product is found, return its ID
       res.json({ productId: product._id });
     } else {
       res.status(404).json({ error: 'Product not found' });
@@ -963,7 +1126,6 @@ app.get('/suggested-product', async (req, res) => {
 
 app.get('/top-rated-product', async (req, res) => {
   try {
-    // Fetch all products
     const products = await ProductModel.find();
 
     let topRatedProduct = null;
@@ -972,13 +1134,11 @@ app.get('/top-rated-product', async (req, res) => {
     for (const product of products) {
       const productId = product._id.toString();
 
-      // Fetch reviews for the product
       const reviews = await ReviewModel.find({ product: productId });
 
       if (reviews.length > 0) {
         const commentsArray = reviews.map((review) => review.comment);
         
-        // Perform sentiment analysis here and get the sentiment scores
         const requestBody = {
           reviews: commentsArray,
         };
@@ -1071,8 +1231,17 @@ app.put('/update-orders/:orderId', async (req, res) => {
 
 app.get('/all-orders', async (req, res) => {
   try {
-    const orders = await OrderModel.find();
-    res.json(orders);
+    const orders = await OrderModel.find().lean();
+    const userPromises = orders.map(async (order) => {
+      const user = await UserModel.findById(order.user, 'username phoneNumber');
+      if (user) {
+        order.user = user; 
+      }
+      return order;
+    });
+
+    const ordersWithUsers = await Promise.all(userPromises);
+    res.json(ordersWithUsers);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to fetch orders' });
@@ -1085,24 +1254,20 @@ app.get('/all-orders', async (req, res) => {
       const productId = req.params.productId;
       const { isReviewed } = req.body;
   
-      // Find the order by ID
       const order = await OrderModel.findById(orderId);
   
       if (!order) {
         return res.status(404).json({ error: 'Order not found' });
       }
   
-      // Find the item within the order's items array
       const itemToUpdate = order.items.find(item => item.product === productId);
   
       if (!itemToUpdate) {
         return res.status(404).json({ error: 'Item not found in the order' });
       }
   
-      // Update the isReviewed property of the item
       itemToUpdate.isReviewed = isReviewed;
   
-      // Save the updated order
       await order.save();
   
       return res.json({ message: 'Review status updated successfully' });
@@ -1141,6 +1306,53 @@ app.patch('/update-profile', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+app.get('/getCarousel', async (req, res) => {
+  
+ const carousel= await CarouselModel.find()
+   
+      res.json(carousel);
+    
+});
+
+app.post('/addCarousel', async (req, res) => {
+  const { imageUrl, caption } = req.body;
+
+  try {
+    const item = new CarouselModel({ imageUrl, caption });
+    await item.save();
+    res.json('Carousel item added');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error adding a new carousel item');
+  }
+});
+
+app.put('/updateCarousel/:id', async (req, res) => {
+  const { id } = req.params;
+  const { imageUrl, caption } = req.body;
+
+  try {
+    await CarouselModel.findByIdAndUpdate(id, { imageUrl, caption });
+    res.json('Carousel item updated');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error updating the carousel item');
+  }
+});
+
+app.delete('/deleteCarousel/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await CarouselModel.findByIdAndRemove(id);
+    res.json('Carousel item deleted');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error deleting the carousel item');
+  }
+});
+
 
 function generateAccessToken(payload) {
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });

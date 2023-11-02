@@ -13,11 +13,15 @@ import { Product } from './product';
 import { Favorite } from './favorite';
 import { ResetPassword } from './ResetPassword';
 import { Inventory } from './admin/inventory';
+import { Setting } from './admin/setting';
 import { AdminDashboard } from './admin/adminDashboard';
 import { ProductManagement } from './admin/productManagement';
 import { OrderManagement } from './admin/orderManagement';
 import { EditProduct } from './admin/editProduct';
+import { AdminLogin } from './admin/adminLogin';
 import CheckoutForm from "./Component/Checkout"
+import { CarouselManagement } from './admin/carouselManagement';
+
 
 function App() {
   const { refreshAccessToken, refreshToken } = useAuth(); 
@@ -71,8 +75,12 @@ function App() {
           <Route path='/admin/inventory' element={<Inventory />} />
           <Route path='/admin/productManagement' element={<ProductManagement />} />
           <Route path='/admin/orderManagement' element={<OrderManagement />} />
+          <Route path='/admin/setting' element={<Setting />} />
           <Route path='/admin/editProduct/:id' element={<EditProduct />} />
+          <Route path='/admin/adminLogin' element={<AdminLogin />} />
           <Route exact path='checkout/' index element={<CheckoutForm />} />
+          <Route path='/admin/carouselManagement' element={<CarouselManagement />} />
+          
         </Routes>
       </AuthProvider>
     </Router>
