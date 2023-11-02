@@ -414,7 +414,6 @@ if (updatedGuestCart.items && updatedGuestCart.items[index]) {
         });
   
         if (clearCartResponse.ok) {
-          // Cart cleared successfully on the server
           console.log('Order placed successfully');
         }
         setFormOpen(false);
@@ -462,22 +461,23 @@ if (updatedGuestCart.items && updatedGuestCart.items[index]) {
         subject: 'Your Order Invoice',
         text: 'Thank you for your order. Here is your invoice.',
         html:`
-        <h2>Order Invoice</h2>
-        <p>Order ID: ${orderID}</p>
-        <p>User: ${user.name}</p>
-        <p>Email: ${user.email}</p>
-        <h3>Ordered Items:</h3>
-        <ul>
+        <h2 style="font-size: 24px; font-weight: bold;">Order Invoice</h2>
+        <p style="font-weight: bold;">Order ID: ${orderID}</p>
+        <p style="font-weight: bold;">User: ${user.name}</p>
+        <p style="font-weight: bold;">Email: ${user.email}</p>
+        <h3 style="font-size: 18px; font-weight: bold;">Ordered Items:</h3>
+        <ul style="list-style: none; padding: 0;">
           ${cart.items.map((item) => `
-            <li>
-              Product: ${item.details.name}<br>
-              Quantity: ${item.quantity}<br>
-              Price: $${item.details.price * item.quantity.toFixed(2)}<br>
+            <li style="margin-bottom: 16px;">
+              <p style="font-weight: bold;">Product: ${item.details.name}</p>
+              <p style="margin: 4px 0;">Quantity: ${item.quantity}</p>
+              <p style="margin: 4px 0;">Price: $${(item.details.price * item.quantity).toFixed(2)}</p>
             </li>
           `).join('')}
         </ul>
-        <h3>Total Amount: $${total}</h3>
-        <p>Shipping Address: ${user.address}</p>
+        <h3 style="font-size: 18px; font-weight: bold;">Total Amount: $${total}</h3>
+        <p style="font-weight: bold;">Shipping Address: ${user.address}</p>
+        
       `,
       }),
     });

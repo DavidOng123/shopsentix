@@ -10,8 +10,8 @@ const AdminHeader = () => {
         <Link to="/admin/productManagement">Products</Link>
         <Link to="/admin/inventory">Inventory</Link>
         <Link to="/admin/orderManagement">Orders</Link>
-        <Link to="/admin/customers">Customers</Link>
-        <Link to="/admin/settings">Settings</Link>
+        <Link to="/admin/carouselManagement">Content</Link>
+        <Link to="/admin/setting">Settings</Link>
       </nav>
     </header>
   );

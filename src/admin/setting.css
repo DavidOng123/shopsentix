@@ -1,0 +1,56 @@
+.admin-setting-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+  min-height: 88vh;
+  position: relative;
+  }
+  
+  .admin-setting-page button {
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .admin-setting-page button:focus + .admin-form {
+    display: block;
+  }
+  
+  .admin-form {
+    display: none;
+    margin: 20px;
+    text-align: center;
+  }
+  
+  .admin-form h2 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .admin-form input {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .admin-form button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  
+  .admin-form button:hover {
+    background-color: #0056b3;
+  }
+  

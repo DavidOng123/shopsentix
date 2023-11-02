@@ -14,10 +14,11 @@ export const AdminDashboard = () => {
   const [uniqueProductNames, setUniqueProductNames] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(''); 
   const { user } = useAuth(); 
+  const [selectedInterval, setSelectedInterval] = useState('yearly');
 
 
   console.log(user)
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'Admin';
   useEffect(() => {
     fetch('http://localhost:4000/orders')
       .then((response) => response.json())
@@ -124,6 +125,27 @@ export const AdminDashboard = () => {
   };
   
 
+  useEffect(() => {
+    fetchProductSalesData(selectedInterval);
+  }, [selectedInterval]);
+
+  const fetchProductSalesData = (interval) => {
+    fetch(`http://localhost:4000/product${interval.charAt(0).toUpperCase() + interval.slice(1)}Sales`)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data)
+        setProductSalesData(data);
+      })
+      .catch((error) => {
+        console.error(`Failed to fetch ${interval} product sales data:`, error);
+      });
+  };
+  
+  const handleIntervalChange = (event) => {
+    console.log(event.target.value)
+    setSelectedInterval(event.target.value);
+  };
+
   const chartRef = useRef(null);
 
   useEffect(() => {
@@ -171,18 +193,18 @@ export const AdminDashboard = () => {
     chartRef.current = newChart;
   }, [productSalesData]);
 
+  if (!isAdmin) {
+    return (
+      <div>
+        <AdminHeader />
+        <div className="admin-dashboard-container">
+          <p>You don't have access to this page.</p>
+        </div>
+        <AdminFooter />
+      </div>
+    );
+  }   
 
-  // if (!isAdmin) {
-  //   return (
-  //     <div>
-  //       <AdminHeader />
-  //       <div className="admin-dashboard-container">
-  //         <p>You don't have access to this page.</p>
-  //       </div>
-  //       <AdminFooter />
-  //     </div>
-  //   );
-  // }   
   return (
     <div>
 <AdminHeader/>
@@ -200,10 +222,6 @@ export const AdminDashboard = () => {
         <div className="stat-box">
           <h2>Total Orders</h2>
           <p>{totalOrders}</p>
-        </div>
-        <div className="stat-box">
-          <h2>Total Customers</h2>
-          <p>500</p>
         </div>
       </section>
         <section className="sentiment-analysis">
@@ -223,7 +241,16 @@ export const AdminDashboard = () => {
           <div className="sentiment-analysis">
           <canvas id="sentimentPieChart"></canvas></div>
         </section>
+       
       <div className="sentiment-analysis">
+      <div className="interval-select">
+        <label>Select Interval: </label>
+        <select value={selectedInterval} onChange={handleIntervalChange}>
+          <option value="yearly">Yearly</option>
+          <option value="monthly">Monthly</option>
+          <option value="daily">Daily</option>
+        </select>
+      </div>
       <h2>Sales Report</h2>
         <canvas id="productSalesChart"></canvas>
       </div>

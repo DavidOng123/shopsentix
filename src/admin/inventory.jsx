@@ -11,7 +11,7 @@ export const Inventory = () => {
   const [newQuantity, setNewQuantity] = useState(0);
   const { user } = useAuth(); 
   console.log(user)
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'Admin';
 
   useEffect(() => {
     // Fetch the product data from your server
@@ -23,7 +23,8 @@ export const Inventory = () => {
       const response = await fetch('http://localhost:4000/products'); // Update the URL as needed
       if (response.ok) {
         const productsData = await response.json();
-        setProducts(productsData);
+
+        setProducts(productsData.filter((product) => product.available));
       } else {
         console.error('Failed to fetch products:', response.status);
       }
@@ -69,17 +70,17 @@ export const Inventory = () => {
     setShowUpdateDialog(false);
   };
 
-  // if (!isAdmin) {
-  //   return (
-  //     <div>
-  //       <AdminHeader />
-  //       <div className="admin-dashboard-container">
-  //         <p>You don't have access to this page.</p>
-  //       </div>
-  //       <AdminFooter />
-  //     </div>
-  //   );
-  // }  
+  if (!isAdmin) {
+    return (
+      <div>
+        <AdminHeader />
+        <div className="admin-dashboard-container">
+          <p>You don't have access to this page.</p>
+        </div>
+        <AdminFooter />
+      </div>
+    );
+  }  
 
   return (
     <div>

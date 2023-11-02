@@ -1,0 +1,53 @@
+
+.carousel-management {
+    padding: 20px;
+  }
+  
+  .carousel-management h1 {
+    font-size: 24px;
+    margin: 10px 0;
+  }
+  
+  .carousel-management input[type="text"] {
+    width: 95%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .carousel-management button {
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .carousel-management ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .carousel-management li {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+  }
+  
+  .carousel-management img {
+    max-width: 100px;
+    max-height: 100px;
+    margin-right: 20px;
+  }
+  
+  .carousel-management button.delete-button {
+    padding: 5px 10px;
+    background-color: #ff6666;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
