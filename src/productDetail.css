@@ -222,3 +222,34 @@ input[type="text"] {
 .load-more-reviews:hover {
   text-decoration: none;
 }
+
+.success-message {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  z-index: 100;
+}
+
+.add-to-favorites-button {
+  margin-top: 20px;
+  background-color: #ff3366; 
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  margin-left: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  transition: background-color 0.3s; 
+}
+
+.add-to-favorites-button:hover {
+  background-color: #e91e63; 
+}
+

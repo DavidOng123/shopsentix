@@ -32,7 +32,6 @@ export const ProductManagement = () => {
         const response = await axios.delete(`http://localhost:4000/products/${productId}`);
 
         if (response.status === 200) {
-          // Update the products list after deleting
           const updatedProducts = products.filter((product) => product._id !== productId);
           setProducts(updatedProducts);
           setSuccessMessage('Product deleted successfully.');

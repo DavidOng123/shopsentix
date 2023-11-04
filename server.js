@@ -1212,6 +1212,31 @@ app.get('/favorites', authenticateToken, async (req, res) => {
   }
 });
 
+app.delete('/remove-favorite/:productId', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { productId } = req.params;
+    const userId = req.user.id;
+
+    const favorite = await FavoriteModel.findOne({ user: userId, product: productId });
+
+    if (!favorite) {
+      return res.status(404).json({ error: 'Favorite not found' });
+    }
+
+    await favorite.deleteOne();
+
+    res.status(200).json({ message: 'Removed from favorites successfully' });
+  } catch (error) {
+    console.error('Error removing favorite:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 app.put('/update-orders/:orderId', async (req, res) => {
   try {
     const orderId = req.params.orderId;

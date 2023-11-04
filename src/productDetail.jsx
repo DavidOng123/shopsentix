@@ -26,6 +26,8 @@ export const ProductDetail = () => {
   const [guestCart, setGuestCart] = useState([]);  
   const [numReviewsToShow, setNumReviewsToShow] = useState(3);
   const [showMoreReviews, setShowMoreReviews] = useState(false);
+  const [addToFavoritesSuccess, setAddToFavoritesSuccess] = useState(false);
+
 
  
 
@@ -178,6 +180,11 @@ export const ProductDetail = () => {
   
         if (response.ok) {
           console.log('Added to favorites successfully.');
+          setAddToFavoritesSuccess(true); 
+
+          setTimeout(() => {
+            setAddToFavoritesSuccess(false);
+          }, 3000);
         } else {
           console.error('Error adding to favorites:', response.status);
         }
@@ -297,6 +304,13 @@ export const ProductDetail = () => {
         </div>
       </div>
     )}
+
+{addToFavoritesSuccess && (
+  <div className="success-message">
+    Added to favorites successfully.
+  </div>
+)}
+
 
       <Footer />
     </div>
