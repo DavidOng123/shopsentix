@@ -8,7 +8,6 @@ const Checkout = () => {
     const [ErrorMessage, setErrorMessage] = useState("");
     const [orderID, setOrderID] = useState(false);
 
-    // creates a paypal order
     const createOrder = (data, actions) => {
         return actions.order.create({
             purchase_units: [

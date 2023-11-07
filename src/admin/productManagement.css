@@ -101,7 +101,6 @@
 
   
   
-  /* Message Styles */
   .error-message {
     color: red;
     font-weight: bold;
@@ -113,7 +112,7 @@
   }
   
 
-  .add-product-form input[type="number"], /* Style for quantity input field */
+  .add-product-form input[type="number"], 
 .add-product-form input[type="text"],
 .add-product-form select {
     width: 100%;
@@ -121,7 +120,8 @@
     margin-bottom: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
-}/* Section Styles */
+}
+
 .product-list {
   margin: 20px 0;
   text-align: center;

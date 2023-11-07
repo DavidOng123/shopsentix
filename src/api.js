@@ -18,8 +18,7 @@ api.interceptors.response.use(
 
       if (refreshToken) {
         try {
-          await refreshAccessToken(); // Call refreshAccessToken here
-        // Retry the failed request
+          await refreshAccessToken();
         return api.request(error.config);
         } catch (refreshError) {
           console.error('Token refresh failed:', refreshError);

@@ -35,11 +35,9 @@ function App() {
       
         if (refreshToken) {
           try {
-            // Call your refresh token logic here using the refreshAccessToken function
             const newAccessToken = await refreshAccessToken();
 
             if (newAccessToken) {
-              // Retry the failed request with the new access token
               error.config.headers.Authorization = `Bearer ${newAccessToken}`;
               return axios.request(error.config);
             } else {

@@ -11,5 +11,4 @@ authAxios.interceptors.request.use((config) => {
   return config;
 });
 
-// Export the authAxios instance
 export default authAxios;

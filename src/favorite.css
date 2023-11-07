@@ -26,7 +26,7 @@
   transition: transform 0.2s;
   display: flex;
 
-  height: 100%; /* Maintain a fixed height */
+  height: 100%; 
 }
 
 .favorite-item:hover {

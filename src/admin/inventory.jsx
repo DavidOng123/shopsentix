@@ -14,13 +14,12 @@ export const Inventory = () => {
   const isAdmin = user?.role === 'Admin';
 
   useEffect(() => {
-    // Fetch the product data from your server
     fetchProducts();
   }, []);
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:4000/products'); // Update the URL as needed
+      const response = await fetch('http://localhost:4000/products'); 
       if (response.ok) {
         const productsData = await response.json();
 
@@ -57,7 +56,6 @@ export const Inventory = () => {
 
         if (response.ok) {
           const updatedProduct = await response.json();
-          // Update the product in your state or refetch the products
           fetchProducts();
         } else {
           console.error('Failed to update product quantity:', response.status);

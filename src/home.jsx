@@ -107,7 +107,6 @@ export const Home = () => {
         navigate('/profile', { replace: true });
       } catch (error) {
         console.error(error);
-        // Handle login error
       }
 
       // Clear form data and errors
