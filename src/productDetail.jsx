@@ -4,8 +4,6 @@ import { Navbar } from './navbar';
 import { Footer } from './Footer';
 import { useAuth } from './auth';
 import './productDetail.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart } from '@fortawesome/free-solid-svg-icons';
 
 
 export const ProductDetail = () => {
@@ -26,6 +24,8 @@ export const ProductDetail = () => {
   const [guestCart, setGuestCart] = useState([]);  
   const [numReviewsToShow, setNumReviewsToShow] = useState(3);
   const [showMoreReviews, setShowMoreReviews] = useState(false);
+  const [addToFavoritesSuccess, setAddToFavoritesSuccess] = useState(false);
+
 
  
 
@@ -40,7 +40,6 @@ export const ProductDetail = () => {
           setAvailableAttributes(productData.attributes || []);
           setSelectedAttribute(productData.attributes[0] || null);
 
-          // Calculate available quantity (if available)
           setAvailableQuantity(
             productData.quantity > 0 ? productData.quantity : 0
           );
@@ -55,7 +54,6 @@ export const ProductDetail = () => {
 
     async function checkIfPurchased() {
       try {
-        // You need to implement an API endpoint to check if the user has purchased the product
         const response = await fetch(`http://localhost:4000/check-purchase/${id}`, {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -130,7 +128,7 @@ export const ProductDetail = () => {
   
         if (response.ok) {
           setShowDialog(false);
-          setHasPurchased(true); // Set to true after successful purchase
+          setHasPurchased(true); 
         } else {
           console.error('Error adding item to the cart:', response.status);
         }
@@ -178,6 +176,11 @@ export const ProductDetail = () => {
   
         if (response.ok) {
           console.log('Added to favorites successfully.');
+          setAddToFavoritesSuccess(true); 
+
+          setTimeout(() => {
+            setAddToFavoritesSuccess(false);
+          }, 3000);
         } else {
           console.error('Error adding to favorites:', response.status);
         }
@@ -232,7 +235,7 @@ export const ProductDetail = () => {
           Add to Cart
         </button>
         <button className="add-to-favorites-button" onClick={handleAddToFavorites}>
-  <FontAwesomeIcon icon={faHeart} />
+  Favorite
 </button>
       </div>
     </div>
@@ -297,6 +300,13 @@ export const ProductDetail = () => {
         </div>
       </div>
     )}
+
+{addToFavoritesSuccess && (
+  <div className="success-message">
+    Added to favorites successfully.
+  </div>
+)}
+
 
       <Footer />
     </div>

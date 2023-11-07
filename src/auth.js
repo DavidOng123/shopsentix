@@ -68,7 +68,6 @@ export function AuthProvider({ children }) {
         }
       } catch (error) {
         console.error('Error fetching user details:', error);
-        // Handle the error, e.g., by redirecting to the login page
       }
     };
   

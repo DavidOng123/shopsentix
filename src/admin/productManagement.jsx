@@ -32,7 +32,6 @@ export const ProductManagement = () => {
         const response = await axios.delete(`http://localhost:4000/products/${productId}`);
 
         if (response.status === 200) {
-          // Update the products list after deleting
           const updatedProducts = products.filter((product) => product._id !== productId);
           setProducts(updatedProducts);
           setSuccessMessage('Product deleted successfully.');
@@ -60,9 +59,9 @@ export const ProductManagement = () => {
       formData.append('price', newProduct.price);
       formData.append('description', newProduct.description);
       formData.append('category', newProduct.category);
-      formData.append('attributes', JSON.stringify(newProduct.attributes)); // Store custom attributes
+      formData.append('attributes', JSON.stringify(newProduct.attributes)); 
       formData.append('image', newProduct.image);
-      formData.append('quantity', newProduct.quantity); // Include quantity
+      formData.append('quantity', newProduct.quantity); 
 
       const response = await axios.post('http://localhost:4000/products', formData, {
         headers: {
@@ -79,7 +78,7 @@ export const ProductManagement = () => {
           category: '',
           attributes: [],
           image: null,
-          quantity: '', // Reset quantity field
+          quantity: '', 
         });
         setSuccessMessage('Product added successfully.');
         setErrorMessage('');
@@ -95,7 +94,7 @@ export const ProductManagement = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:4000/products'); // Update the URL to match your server's endpoint
+        const response = await axios.get('http://localhost:4000/products');
         if (response.status === 200) {
           const productsData = response.data;
           setProducts(productsData.filter((product) => product.available));

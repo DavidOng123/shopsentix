@@ -16,6 +16,7 @@ export const EditProduct = () => {
     const [newProduct, setNewProduct] = useState({}); 
     const [categories, setCategories] = useState(['Clothing', 'Electronic', 'Accessories']);
     const [showImageUpload, setShowImageUpload] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
     
     const isAdmin = user?.role === 'Admin';
 
@@ -27,7 +28,7 @@ export const EditProduct = () => {
               const productData = response.data;
               console.log(productData)
               setProduct(productData);
-              setNewProduct(productData); // Initialize the newProduct state with product details
+              setNewProduct(productData); 
             } else {
               console.error('Failed to fetch product:', response.status);
             }
@@ -48,22 +49,20 @@ export const EditProduct = () => {
 
       const handleSaveChanges = async () => {
         try {
-          // Send the edited product details to the server for updating
           const response = await axios.post(`http://localhost:4000/products/${id}`, newProduct);
           console.log(newProduct)
     
           if (response.status === 200) {
-            setProduct(newProduct); // Update the displayed product with edited details
+            setProduct(newProduct); 
             setEditable(false);
             setShowImageUpload(false);
-            // Optionally, show a success message or perform further actions
+            setSuccessMessage('Product updated successfully');
+            setTimeout(() => setSuccessMessage(''), 3000);
           } else {
             console.error('Failed to update product:', response.status);
-            // Handle the error, show an error message, etc.
           }
         } catch (error) {
           console.error('Error updating product:', error);
-          // Handle the error, show an error message, etc.
         }
       };
   
@@ -165,6 +164,7 @@ export const EditProduct = () => {
     <button onClick={handleEditToggle}>Edit</button>
   )}
 </div>
+{successMessage && <div className="success-message">{successMessage}</div>}
         </section>
       </div>
       <AdminFooter />

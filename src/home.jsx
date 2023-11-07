@@ -107,7 +107,6 @@ export const Home = () => {
         navigate('/profile', { replace: true });
       } catch (error) {
         console.error(error);
-        // Handle login error
       }
 
       // Clear form data and errors
@@ -283,8 +282,9 @@ export const Home = () => {
               Accessories
             </button>
           </div>
-        
+          
           <div className="popular-category">
+         
   {filteredProducts.map((product) => (
     <div className="product" key={product._id}>
       {product.quantity === 0 ? ( 
@@ -312,10 +312,13 @@ export const Home = () => {
     </div>
   ))}
 </div>
-
 <Link to='/product' className="explore-link">
                     Explore more
                   </Link>
+                  <br></br>
+                  <br></br>
+
+
 {isAuthenticated ? null : (
   
               <div className='loginbox'>

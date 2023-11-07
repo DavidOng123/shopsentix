@@ -177,7 +177,6 @@ useEffect(() => {
                   .map((item, index) => ({
                     details: item,
                     imageUrl: `http://localhost:4000/uploads/${item.file_name}`,
-                    // You can add other properties as needed.
                   }));
               
                 return populatedUnavailableItems;
@@ -185,7 +184,6 @@ useEffect(() => {
               
               populateUnavailableItems().then((unavailableItems) => {
                 console.log('Unavailable item details:', unavailableItems);
-                // You can use unavailableItems as needed, e.g., to display them in your component.
                 setUnavailableItem(unavailableItems);
               });
               
@@ -267,7 +265,6 @@ useEffect(() => {
       updatedCart[index].attribute = newAttribute;
       setCart({ items: updatedCart });
 
-      // Send a request to update the cart item's attribute on the server
       updateCartItem(index, updatedCart[index]);
     }
   };

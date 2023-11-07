@@ -1,6 +1,4 @@
-/* adminDashboard.css */
 
-/* Base Styles */
 .admin-dashboard-container {
     font-family: Arial, sans-serif;
     background-color: #f5f5f5;
@@ -88,7 +86,6 @@
     margin: 5px 0;
   }
   
-  /* Function Buttons */
   .function-buttons {
     display: flex;
     flex-wrap: wrap;
@@ -96,7 +93,6 @@
     margin-top: 20px;
   }
   
-  /* Style for the select element */
 .product-select {
   width: 100%;
   padding: 10px;
@@ -107,18 +103,15 @@
   color: #333;
 }
 
-/* Style for the select options */
 .product-select option {
   font-size: 16px;
 }
 
-/* Style for the select when an option is selected */
 .product-select:focus {
-  border: 2px solid #007BFF; /* Change the border color when focused */
+  border: 2px solid #007BFF; 
 }
 
   
-  /* Responsive adjustments */
   @media (max-width: 768px) {
     .dashboard-stats {
       flex-direction: column;

@@ -7,7 +7,7 @@
     flex-grow: 1; 
   }
   .wrapper {
-    min-height: 100vh;
+    min-height: 150vh;
     position: relative;
   }
 
@@ -109,8 +109,4 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
-
-.explore-link{
-  text-align: 'right'
 }

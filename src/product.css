@@ -55,7 +55,10 @@
     max-width: 300px; 
     display: flex;
     flex-direction: column;
+    position: relative;
   }
+  
+
   
   .product-card:hover {
     transform: scale(1.03); 
@@ -156,5 +159,24 @@
     background: #fff;
     color: #ED2553;
   }
+
+  .explore-link {
+    display: inline-block;
+    float: right;
+    background-color: #FFA500;
+    color: #FFF;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    z-index: 1; 
+}
+
+.explore-link:hover {
+    background-color: #fff;
+    color: #ED2553;
+}
+
 
   

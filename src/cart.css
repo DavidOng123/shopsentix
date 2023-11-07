@@ -1,4 +1,3 @@
-/* cart.css */
 
 .cart-page{
    min-height: 100vh;
@@ -41,101 +40,97 @@
 
 
 .cart-item {
-  background-color: #f9f9f9; /* Light grey background color */
-  color: #333; /* Text color */
-  padding: 16px; /* Add padding for spacing */
-  border: 1px solid #ddd; /* Add a border for separation */
-  border-radius: 8px; /* Rounded corners */
-  margin: 8px; /* Add margin to separate items */
-  display: flex; /* Arrange content in a row */
+  background-color: #f9f9f9; 
+  color: #333; 
+  padding: 16px;
+  border: 1px solid #ddd; 
+  border-radius: 8px; 
+  margin: 8px; 
+  display: flex; 
 }
 
 .cart-item.low-stock {
-  border: 1px solid #f0ad4e; /* Yellow border */
+  border: 1px solid #f0ad4e; 
   padding: 10px;
   margin: 10px;
   display: flex;
 }
 
-/* Style for out of stock items */
 .cart-item.out-of-stock {
-  border: 1px solid #d9534f; /* Red border */
+  border: 1px solid #d9534f; 
   padding: 10px;
   margin: 10px;
   display: flex;
 }
 
-/* Style for the "Out of Stock" message */
 .out-of-stock-message {
-  color: #d9534f; /* Red text color */
+  color: #d9534f; 
 }
 
 .cart-item img {
-  max-width: 100px; /* Limit the image width */
+  max-width: 100px; 
 }
 
 .item-details {
-  margin-left: 16px; /* Add space to the left of the item details */
-  flex-grow: 1; /* Allow details to expand and fill available space */
+  margin-left: 16px; 
+  flex-grow: 1; 
 }
 
 .item-details-header {
   display: flex;
-  justify-content: space-between; /* Space between name and price */
-  align-items: center; /* Center vertically */
+  justify-content: space-between; 
+  align-items: center; 
 }
 
 .product-name {
-  font-size: 20px; /* Larger font size for the product name */
+  font-size: 20px; 
 }
 
 .product-price {
-  font-size: 16px; /* Font size for the price */
+  font-size: 16px;
 }
 
 .item-details-controls {
   display: flex;
-  justify-content: space-between; /* Space between controls */
-  align-items: center; /* Center vertically */
-  margin-top: 8px; /* Add space below the item details */
+  justify-content: space-between; 
+  align-items: center; 
+  margin-top: 8px; 
 }
 
 .attribute-control,
 .quantity-control {
-  display: flex; /* Arrange controls in a row */
-  align-items: center; /* Center vertically */
+  display: flex; 
+  align-items: center; 
 }
 
 .attribute-select,
 .quantity-input {
-  margin-left: 8px; /* Add space between select and input */
-  padding: 4px; /* Add padding to input and select */
+  margin-left: 8px; 
+  padding: 4px; 
 }
 
 .remove-button {
-  background-color: #ff4c4c; /* Red background color for remove button */
-  color: #fff; /* White text color */
-  border: none; /* Remove button border */
-  border-radius: 4px; /* Rounded button corners */
-  padding: 4px 8px; /* Padding for button */
-  cursor: pointer; /* Show hand cursor on hover */
+  background-color: #ff4c4c; 
+  color: #fff; 
+  border: none; 
+  border-radius: 4px; 
+  padding: 4px 8px; 
+  cursor: pointer; 
 }
 
-/* Styles for the overlay (blurred background) */
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
+  background: rgba(0, 0, 0, 0.7); 
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
 }
 
-/* Styles for the dialog box */
 .confirmation-dialog {
   background-color: white;
   padding: 20px;
@@ -153,14 +148,14 @@
 .total-price {
   font-size: 18px;
   margin-top: 20px;
-  text-align: center; /* Center-align the text */
-  display: block; /* Ensure the text appears on a new line */
+  text-align: center;
+  display: block; 
 }
 
 .checkout-container {
   display: flex;
   justify-content: center;
-  margin: 20px 0; /* Adjust margin as needed */
+  margin: 20px 0; 
 }
 
 .checkout-button {
@@ -205,11 +200,10 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Styles for the buttons inside the dialog box */
 .confirmation-dialog button {
   margin: 10px;
   padding: 10px 20px;
-  background-color: #007bff; /* Change to your desired button background color */
+  background-color: #007bff; 
   color: white;
   border: none;
   border-radius: 5px;
@@ -219,11 +213,11 @@
 }
 
 .confirmation-dialog button:hover {
-  background-color: #0056b3; /* Change to a slightly darker shade for hover effect */
+  background-color: #0056b3; 
 }
 .form-dialog {
-  width: 800px; /* Adjust the width as needed */
-  height: 700px; /* Adjust the height as needed */
+  width: 800px; 
+  height: 700px; 
   background-color: #fff;
   padding: 20px;
   border-radius: 10px;
@@ -254,20 +248,20 @@
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  margin-top: 5px; /* Add some space at the top of the input field */
-  margin-bottom: 5px; /* Add some space at the bottom of the input field */
+  margin-top: 5px; 
+  margin-bottom: 5px; 
 }
 
 
 .form-buttons {
   display: flex;
-  justify-content: flex-end; /* Place buttons on the right side */
-  margin-top: 10px; /* Add space at the top of the button container */
+  justify-content: flex-end; 
+  margin-top: 10px; 
 }
 
 .back-button,
 .submit-button {
-  flex: 1; /* Make buttons share equal space */
+  flex: 1; 
 }
 
 .back-button {
@@ -278,11 +272,11 @@
   cursor: pointer;
   border-radius: 5px;
   transition: background-color 0.3s;
-  margin-right: 10px; /* Add space between the buttons */
+  margin-right: 10px; 
 }
 
 .submit-button {
-  background-color: #2ecc71; /* Example color for the submit button */
+  background-color: #2ecc71; 
   color: #fff;
   border: none;
   padding: 10px;
@@ -296,40 +290,40 @@
 }
 
 .submit-button:hover {
-  background-color: #27ae60; /* Example color change on hover for the submit button */
+  background-color: #27ae60; 
 }
 
 .unavailable-item {
-  background-color: #ccc; /* Light grey background color for unavailable items */
-  color: #333; /* Text color */
-  padding: 16px; /* Add padding for spacing */
-  border: 1px solid #ddd; /* Add a border for separation */
-  border-radius: 8px; /* Rounded corners */
-  margin: 8px; /* Add margin to separate items */
-  display: flex; /* Arrange content in a row */
+  background-color: #ccc; 
+  color: #333; 
+  padding: 16px; 
+  border: 1px solid #ddd; 
+  border-radius: 8px; 
+  margin: 8px; 
+  display: flex; 
 }
 
 .unavailable-item img {
-  max-width: 100px; /* Limit the image width */
+  max-width: 100px;
 }
 
 .item-details {
-  margin-left: 16px; /* Add space to the left of the item details */
-  flex-grow: 1; /* Allow details to expand and fill available space */
+  margin-left: 16px;
+  flex-grow: 1; 
 }
 
 .item-details-header {
   display: flex;
-  justify-content: space-between; /* Space between name and price */
-  align-items: center; /* Center vertically */
+  justify-content: space-between; 
+  align-items: center;
 }
 
 .product-name {
-  font-size: 20px; /* Larger font size for the product name */
+  font-size: 20px; 
 }
 
 product-price {
-  font-size: 16px; /* Font size for the price */
+  font-size: 16px;
 }
 
 
