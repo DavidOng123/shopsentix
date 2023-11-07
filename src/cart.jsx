@@ -21,6 +21,7 @@ export const Cart = () => {
     email: '',
     address: '',
   });
+  const isUser = isAuthenticated && user && user.role === 'User';
   
   const [orderID, setOrderID] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -583,9 +584,13 @@ if (updatedGuestCart.items && updatedGuestCart.items[index]) {
           <p>Total: ${calculateTotalPrice()}</p>
         </div>
         <div className="checkout-container">
-          <button className="checkout-button" onClick={handleOpenConfirmation}>
-            Checkout
-          </button>
+        {isUser ? (
+              <button className="checkout-button" onClick={handleOpenConfirmation}>
+                Checkout
+              </button>
+            ) : (
+              <p>Please log in to buy the items.</p>
+            )}
         </div>
       </div>
       <Footer />

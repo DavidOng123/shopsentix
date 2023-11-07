@@ -27,9 +27,8 @@ app.use(express.urlencoded({extended:false}))
 app.use(cors(corsOptions));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Add CORS headers to allow cross-origin requests
 app.use('/uploads', (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3000'); // Replace with the URL of your frontend
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3000'); 
   res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   next();
@@ -113,24 +112,20 @@ app.post(
     try {
       const { username, email, password, phoneNumber, address } = req.body;
 
-      // Validate user inputs
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
 
-      // Check if email is already registered
       const existingUser = await UserModel.findOne({ email });
       if (existingUser) {
         return res.status(400).json({ message: 'Email is already registered' });
       }
 
-      // Hash and salt the password before storing it
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
       const role="User"
 
-      // Create a new user
       const newUser = new UserModel({
         username,
         email,
@@ -140,7 +135,7 @@ app.post(
         role
       });
 
-      await newUser.save(); // Save the user to the database
+      await newUser.save(); 
 
       res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
@@ -179,7 +174,6 @@ app.post(
       const address="Admin"
 
 
-      // Create a new user
       const newUser = new UserModel({
         username,
         email,
@@ -844,7 +838,6 @@ app.get('/orders/:userId', async (req, res) => {
 
     const orders = await OrderModel.find({ user: userId });
 
-    // Respond with the orders
     res.json(orders);
   } catch (error) {
     console.error('Error fetching orders:', error);
@@ -854,7 +847,6 @@ app.get('/orders/:userId', async (req, res) => {
 
 app.get('/productSales', async (req, res) => {
   try {
-    // Aggregate the sales data
     const productSales = await OrderModel.aggregate([
       {
         $unwind: '$items', // Split order items into separate documents
