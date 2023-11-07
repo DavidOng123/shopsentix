@@ -22,11 +22,11 @@ from sklearn.model_selection import GridSearchCV
 def assign_sentiment(review):
     sentiment_scores = sentiment.polarity_scores(str(review))
     if sentiment_scores['compound'] >= 0.05:
-        return 'positive'
+        return 'Positive'
     elif sentiment_scores['compound'] <= -0.05:
-        return 'negative'
+        return 'Negative'
     else:
-        return 'neutral'
+        return 'Neutral'
 
 def clean_text(text):
     text = text.lower()
@@ -89,11 +89,11 @@ def rule_based_sentiment(text):
     num_negative_keywords = sum(1 for keyword in negative_keywords if keyword in text)
 
     if num_positive_keywords > num_negative_keywords:
-        return 'positive'
+        return 'Positive'
     elif num_negative_keywords > num_positive_keywords:
-        return 'negative'
+        return 'Negative'
     else:
-        return 'neutral'
+        return 'Neutral'
 
 def apply_rule_based_sentiment_to_neutral(row):
     if row['Sentiment'] == 'Neutral':

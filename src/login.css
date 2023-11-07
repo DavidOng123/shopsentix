@@ -148,3 +148,9 @@
     background: #fff;
     color: #ED2553;
   }
+
+  .error-message {
+    color: red; 
+    font-size: 16px; 
+    margin: 10px 0; 
+  }

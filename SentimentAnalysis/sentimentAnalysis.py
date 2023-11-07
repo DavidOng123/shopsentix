@@ -15,6 +15,23 @@ CORS(app)
 trained_model = joblib.load('sentiment_model.joblib')
 trained_vectorizer = joblib.load('tfidf_vectorizer.joblib')
 
+def rule_based_sentiment(text):
+    positive_keywords = ["good", "great", "excellent", "like", "love"]
+    negative_keywords = ["bad", "terrible", "awful", "dislike", "sucks"]
+
+    # Count the number of positive and negative keywords in the text
+    num_positive_keywords = sum(1 for keyword in positive_keywords if keyword in text)
+    num_negative_keywords = sum(1 for keyword in negative_keywords if keyword in text)
+
+    if num_positive_keywords > num_negative_keywords:
+        return 'Positive'
+    elif num_negative_keywords > num_positive_keywords:
+        return 'Negative'
+    else:
+        return 'Neutral'
+
+
+
 def clean_text(text):
     text = text.lower()
     text = ''.join([char for char in text if char not in string.punctuation])
@@ -24,22 +41,26 @@ def clean_text(text):
     cleaned_text = ' '.join(words)
     return cleaned_text
 
+
 def analyze_sentiments(reviews):
     sentiments = {'positive': 0, 'neutral': 0, 'negative': 0}
 
     for review in reviews:
         cleaned_text = clean_text(review)
         text_tfidf = trained_vectorizer.transform([cleaned_text])
-        sentiment = trained_model.predict(text_tfidf)[0]
+        machine_learning_sentiment = trained_model.predict(text_tfidf)[0]
 
-        if lower(sentiment) == 'positive':
+        rule_based_sentiment_result = rule_based_sentiment(cleaned_text)
+
+        if lower(machine_learning_sentiment) == 'positive' or lower(rule_based_sentiment_result) == 'positive':
             sentiments['positive'] += 1
-        elif lower(sentiment) == 'neutral':
+        elif lower(machine_learning_sentiment) == 'neutral' or lower(rule_based_sentiment_result) == 'neutral':
             sentiments['neutral'] += 1
         else:
             sentiments['negative'] += 1
 
     return sentiments
+
 
 @app.route('/predict_sentiments', methods=['POST'])
 def predict_sentiments():

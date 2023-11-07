@@ -1,34 +1,102 @@
-GET http://localhost:4000/orders/653cc9c0baee708edc7060c0
-
-
-
-GET http://localhost:5000
-
-
-GET http://localhost:4000/user-details
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImRhdmlkQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF2aWQiLCJpYXQiOjE2OTYzNDMzMjcsImV4cCI6MTY5NjM0MzkyN30.UiznSqB1Q5suVuonqZTzm6HUGerASUtZwqI-2xb0Xck
-###
-
-POST http://127.0.0.1:5000/predict_sentiments
+# Register User
+POST http://localhost:4000/register
 Content-Type: application/json
 
 {
-  "reviews": ["this product is good", "abc", "i love it"]
+  "username": "testuser",
+  "email": "testuser@example.com",
+  "password": "password123",
+  "phoneNumber": "1234567890",
+  "address": "123 Main St",
+  "role":"User"
 }
 
-###
+tests["Registration Status Code is 201"] = responseCode.code === 201;
+tests["Registration Successful"] = responseBody.has("message");
 
-DELETE http://localhost:4000/logout 
+#Regisrer admin
+
+POST http://localhost:4000/adminRegister
 Content-Type: application/json
 
 {
-"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImRhdmlkQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF2aWQiLCJpYXQiOjE2OTUxMDQ4MTgsImV4cCI6MTY5NTEwNTcxOH0.xXXn6wNyAolIwQhwuDkf-VJu2VkPA2xp6SvtEbH_xn0"}
+  "username": "testadmin",
+  "email": "testadmin@example.com",
+  "password": "password123",
+  "phoneNumber": "1234567890",
+  "address": "123 Main St",
+  "role":"Admin"
+}
 
-###
+tests["Admin registration Status Code is 201"] = responseCode.code === 201;
+tests["Admin registration Successful"] = responseBody.has("message");
+
+# Login
 POST http://localhost:4000/login
 Content-Type: application/json
 
 {
-    "email":"david@gmail.com",
-    "password":"david123"
+  "email": "testuser@example.com",
+  "password": "password123"
+}
+
+tests["Login Status Code is 200"] = responseCode.code === 200;
+tests["Login Successful"] = responseBody.has("accessToken");
+tests["Login Refresh Token"] = responseBody.has("refreshToken");
+
+# Refresh Token
+POST http://localhost:4000/token
+Content-Type: application/json
+
+{
+  "token": pm.environment.get("refreshToken")
+}
+
+tests["Token Refresh Status Code is 200"] = responseCode.code === 200;
+tests["Token Refresh Successful"] = responseBody.has("accessToken");
+
+# Get User Details
+GET http://localhost:4000/user-details
+Content-Type: application/json
+
+tests["User Details Status Code is 200"] = responseCode.code === 200;
+tests["User Details has ID"] = responseBody.has("id");
+tests["User Details has Email"] = responseBody.has("email");
+tests["User Details has Username"] = responseBody.has("username");
+tests["User Details has Address"] = responseBody.has("address");
+tests["User Details has Role"] = responseBody.has("role");
+tests["User Details has Phone"] = responseBody.has("phone");
+
+# Test Forgot Password Endpoint
+
+POST http://localhost:4000/forgot-password
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com"
+}
+
+# Test Send Invoice Endpoint
+
+POST http://localhost:4000/sendInvoice
+Content-Type: application/json
+
+{
+  "recipientEmail": "recipient@example.com",
+  "subject": "Invoice",
+  "text": "Here's your invoice.",
+  "html": "<html><body><p>Invoice details</p></body></html>"
+}
+
+# Test Reset Password Endpoint
+
+GET http://localhost:4000/reset-password/USER_ID/RESET_TOKEN
+
+# Test Reset Password with New Password Endpoint
+
+POST http://localhost:4000/reset-password/USER_ID/RESET_TOKEN
+Content-Type: application/json
+
+{
+  "password": "new_password"
 }

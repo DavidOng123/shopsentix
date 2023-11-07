@@ -6,10 +6,11 @@ import { Footer } from './Footer';
 import './favorite.css';
 
 export const Favorite = () => {
-  const { user, accessToken } = useAuth();
+  const { accessToken, isAuthenticated, refreshAccessToken, user } = useAuth();
   const [favorites, setFavorites] = useState([]);
   const [successMessage, setSuccessMessage] = useState('');
-
+  const isUser = isAuthenticated && user && user.role === 'User';
+  
   useEffect(() => {
     if (user) {
       fetchFavorites();
@@ -58,6 +59,18 @@ export const Favorite = () => {
       console.error('Error removing from favorites:', error);
     }
   };
+
+  if (!isUser) {
+    return (
+      <div>
+        <Navbar />
+        <div className="admin-dashboard-container">
+          <p>You don't have access to this page.</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div>

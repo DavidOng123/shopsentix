@@ -17,7 +17,8 @@ export const Profile = () => {
   const [reviewData, setReviewData] = useState({ orderId: '', productId: '' });
   const [profileData, setProfileData] = useState({});
   const [filterStatus, setFilterStatus] = useState('all'); 
-
+  const isUser = isAuthenticated && user && user.role === 'User';
+  
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -204,6 +205,8 @@ export const Profile = () => {
       console.error('Error updating review status:', error);
     }
   };
+
+ 
 
   return (
     <div>

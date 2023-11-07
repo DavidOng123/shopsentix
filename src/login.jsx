@@ -19,6 +19,7 @@ export const Login = () => {
     email: '',
     password: '',
   });
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -66,7 +67,7 @@ export const Login = () => {
         navigate('/profile', { replace: true });
       } catch (error) {
         console.error(error);
-        // Handle login error
+        setErrorMessage('Wrong Credentials')
       }
 
       // Clear form data and errors
@@ -104,6 +105,7 @@ export const Login = () => {
               <br></br>
               <div className='box'>
                 <div className='title'>LOGIN</div>
+               
                 <form onSubmit={handleLogin}>
                   <div className='form-group'>
                     <label htmlFor='email'>Email</label>
@@ -128,7 +130,8 @@ export const Login = () => {
                     />
                     <div className='error'>{errors.password}</div>
                   </div>
-
+                  {errorMessage && <div className='error-message'>{errorMessage}</div>} {/* Display error message */}
+              
                   <button type='submit'>Login</button>
                 </form>
                 <p>
