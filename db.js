@@ -111,6 +111,10 @@ const favoriteSchema = new mongoose.Schema({
   product: String
 });
 
+const carouselItemSchema = new mongoose.Schema({
+  imageUrl: String,
+  caption: String,
+});
 
 const CarouselModel = mongoose.model('Carousel', carouselItemSchema);
 

@@ -83,10 +83,30 @@ train_df['Sentence'] = train_df['Sentence'].str.replace(pattern_to_remove, '', r
 def rule_based_sentiment(text):
     positive_keywords = ["good", "great", "excellent", "like", "love"]
     negative_keywords = ["bad", "terrible", "awful", "dislike", "sucks"]
+    negation_keywords = ["but", "not", "never", "no", "ain't"]
 
-    # Count the number of positive and negative keywords in the text
-    num_positive_keywords = sum(1 for keyword in positive_keywords if keyword in text)
-    num_negative_keywords = sum(1 for keyword in negative_keywords if keyword in text)
+    # Split the text into words
+    words = text.split()
+
+    num_positive_keywords = 0
+    num_negative_keywords = 0
+
+    # Initialize a flag to track negation
+    negate = False
+
+    for word in words:
+        if word in negation_keywords:
+            negate = not negate  # Toggle the negation flag
+        elif word in positive_keywords:
+            if negate:
+                num_negative_keywords += 1
+            else:
+                num_positive_keywords += 1
+        elif word in negative_keywords:
+            if negate:
+                num_positive_keywords += 1
+            else:
+                num_negative_keywords += 1
 
     if num_positive_keywords > num_negative_keywords:
         return 'Positive'
@@ -94,6 +114,7 @@ def rule_based_sentiment(text):
         return 'Negative'
     else:
         return 'Neutral'
+
 
 def apply_rule_based_sentiment_to_neutral(row):
     if row['Sentiment'] == 'Neutral':
@@ -110,7 +131,7 @@ test_df['Sentence'] = test_df['Sentence'].apply(cleaning_URLs)
 pattern_to_remove = r'\S+@\S+'
 test_df['Sentence'] = test_df['Sentence'].str.replace(pattern_to_remove, '', regex=True)
 
-tfidf_vectorizer = TfidfVectorizer(stop_words="english", max_features=20000)
+tfidf_vectorizer = TfidfVectorizer(stop_words="english", max_features=50000)
 
 X_train = train_df['Sentence']
 y_train = train_df['Sentiment']
