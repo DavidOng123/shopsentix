@@ -16,9 +16,11 @@ trained_model = joblib.load('sentiment_model.joblib')
 trained_vectorizer = joblib.load('tfidf_vectorizer.joblib')
 
 def rule_based_sentiment(text):
-    positive_keywords = ["good", "great", "excellent", "like", "love"]
-    negative_keywords = ["bad", "terrible", "awful", "dislike", "sucks"]
-    negation_keywords = ["but", "not", "never", "no", "ain't"]
+    positive_keywords = ["good", "great", "excellent", "like", "love", "wonderful", "amazing", "fantastic",
+                         "outstanding", "perfect"]
+    negative_keywords = ["bad", "terrible", "awful", "dislike", "sucks", "horrible", "dreadful", "atrocious", "abysmal",
+                         "disastrous"]
+    negation_keywords = ["but", "not", "never", "no", "ain't", "however", "yet", "although", "despite", "though"]
 
     # Split the text into words
     words = text.split()

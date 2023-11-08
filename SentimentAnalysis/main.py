@@ -17,7 +17,8 @@ import seaborn as sns
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score, classification_report
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, train_test_split
+
 
 def assign_sentiment(review):
     sentiment_scores = sentiment.polarity_scores(str(review))
@@ -125,21 +126,18 @@ def apply_rule_based_sentiment_to_neutral(row):
 
 train_df['Sentiment'] = train_df.apply(apply_rule_based_sentiment_to_neutral, axis=1)
 
-test_df['Sentence'] = test_df['Sentence'].apply(cleaning_numbers)
-test_df['Sentence'] = test_df['Sentence'].apply(clean_text)
-test_df['Sentence'] = test_df['Sentence'].apply(cleaning_URLs)
-pattern_to_remove = r'\S+@\S+'
-test_df['Sentence'] = test_df['Sentence'].str.replace(pattern_to_remove, '', regex=True)
 
 tfidf_vectorizer = TfidfVectorizer(stop_words="english", max_features=50000)
 
-X_train = train_df['Sentence']
-y_train = train_df['Sentiment']
+X_train, X_test, y_train, y_test = train_test_split(train_df['Sentence'], train_df['Sentiment'], test_size=0.2, random_state=42)
+
+
 X_train_resampled, y_train_resampled = oversampler.fit_resample(X_train.values.reshape(-1, 1), y_train)
 X_train_resampled = X_train_resampled.flatten()
 
+
 X_train_tfidf = tfidf_vectorizer.fit_transform(X_train_resampled)
-X_test_tfidf = tfidf_vectorizer.transform(test_df['Sentence'])
+X_test_tfidf = tfidf_vectorizer.transform(X_test)
 
 param_grid = {
     'alpha': [0.1, 0.5, 1.0],
@@ -154,7 +152,6 @@ best_estimator = grid_search.best_estimator_
 
 best_estimator.fit(X_train_tfidf, y_train_resampled)
 
-y_test = test_df['Sentiment']
 y_pred = best_estimator.predict(X_test_tfidf)
 
 accuracy = accuracy_score(y_test, y_pred)
