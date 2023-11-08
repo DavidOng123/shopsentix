@@ -546,7 +546,7 @@ app.delete('/products/:productId', async (req, res) => {
       await cart.save();
     }
     } else {
-      await product.deleteOne;
+      await product.deleteOne();
     }
 
 
