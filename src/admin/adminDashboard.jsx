@@ -52,77 +52,79 @@ export const AdminDashboard = () => {
 
 
   
+  const chartRef = useRef(null);
 
+const handleProductChange = async (event) => {
+  const name = event.target.value;
 
-  const handleProductChange = async (event) => {
-    const name = event.target.value;
-  
+  try {
+    const response = await fetch(`http://localhost:4000/getProductIdByName/${name}`);
+    const data = await response.json();
+
+    const productId = data.productId;
+    console.log("Product ID by Name: " + productId);
+
+    const reviewsResponse = await fetch(`http://localhost:4000/reviews/${productId}`);
+    const reviewsData = await reviewsResponse.json();
+
+    const commentsArray = reviewsData.map((review) => review.comment);
+    console.log("Comments Array: ", commentsArray);
+
+    const requestBody = {
+      reviews: commentsArray,
+    };
+
     try {
-      const response = await fetch(`http://localhost:4000/getProductIdByName/${name}`);
-      const data = await response.json();
-  
-      const productId = data.productId;
-      console.log("Product ID by Name: " + productId);
-  
-      const reviewsResponse = await fetch(`http://localhost:4000/reviews/${productId}`);
-      const reviewsData = await reviewsResponse.json();
-  
-      const commentsArray = reviewsData.map((review) => review.comment);
-      console.log("Comments Array: ", commentsArray);
-
-      const requestBody = {
-        reviews: commentsArray,
-      };
-      
-      fetch('http://127.0.0.1:5000/predict_sentiments', {
+      const sentimentResponse = await fetch('http://127.0.0.1:5000/predict_sentiments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          const sentimentData = data;
+      });
 
-          // Prepare data for the pie chart
-          const labels = ['Positive', 'Negative', 'Neutral'];
-          const backgroundColors = ['green', 'red', 'gray']; // Define your colors
-          const dataValues = [sentimentData.positive, sentimentData.negative, sentimentData.neutral];
-  
-          // Get the chart canvas element
-          const ctx = document.getElementById('sentimentPieChart').getContext('2d');
-  
-          // Create the pie chart
-          new Chart(ctx, {
-            type: 'pie',
-            data: {
-              labels,
-              datasets: [
-                {
-                  data: dataValues,
-                  backgroundColor: backgroundColors,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-            },
-          });
-        })
-        .catch((error) => {
-          console.error('Failed to call sentiment analysis API:', error);
+      if (sentimentResponse.ok) {
+        const sentimentData = await sentimentResponse.json();
+
+        // Clear the previous chart
+        if (chartRef.current) {
+          chartRef.current.destroy();
+        }
+
+        const labels = ['Positive', 'Negative', 'Neutral'];
+        const backgroundColors = ['green', 'red', 'gray'];
+        const dataValues = [sentimentData.positive, sentimentData.negative, sentimentData.neutral];
+
+        const ctx = document.getElementById('sentimentPieChart').getContext('2d');
+
+        const pieChart = new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels,
+            datasets: [
+              {
+                data: dataValues,
+                backgroundColor: backgroundColors,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+          },
         });
-      
-      
-
-
-  
+        chartRef.current = pieChart;
+      } else {
+        console.error('Failed to call sentiment analysis API:', sentimentResponse.status);
+      }
     } catch (error) {
-      console.error('Failed to fetch product ID or reviews:', error);
+      console.error('Failed to call sentiment analysis API:', error);
     }
-  };
+  } catch (error) {
+    console.error('Failed to fetch product ID or reviews:', error);
+  }
+};
+
   
 
   useEffect(() => {
@@ -146,13 +148,13 @@ export const AdminDashboard = () => {
     setSelectedInterval(event.target.value);
   };
 
-  const chartRef = useRef(null);
+  const chartRef2 = useRef(null);
 
   useEffect(() => {
     if (productSalesData.length === 0) return;
 
-    if (chartRef.current) {
-      chartRef.current.destroy();
+    if (chartRef2.current) {
+      chartRef2.current.destroy();
     }
 
     const ctx = document.getElementById('productSalesChart').getContext('2d');
@@ -190,7 +192,7 @@ export const AdminDashboard = () => {
       },
     });
 
-    chartRef.current = newChart;
+    chartRef2.current = newChart;
   }, [productSalesData]);
 
   if (!isAdmin) {

@@ -17,7 +17,7 @@ export const ProductManagement = () => {
     image: null,
     quantity: '', 
   });
-  const [categories, setCategories] = useState(['Clothing', 'Electronic', 'Accessories']);
+  const [categories, setCategories] = useState(['Smartphone', 'Tablet', 'Laptop','Television','Wearable']);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const { user } = useAuth(); 
@@ -35,6 +35,9 @@ export const ProductManagement = () => {
           const updatedProducts = products.filter((product) => product._id !== productId);
           setProducts(updatedProducts);
           setSuccessMessage('Product deleted successfully.');
+          setTimeout(() => {
+            setSuccessMessage('');
+          }, 3000);
           setErrorMessage('');
         } else {
           setErrorMessage('Failed to delete product.');
@@ -81,6 +84,9 @@ export const ProductManagement = () => {
           quantity: '', 
         });
         setSuccessMessage('Product added successfully.');
+        setTimeout(() => {
+          setSuccessMessage('');
+        }, 3000);
         setErrorMessage('');
       } else {
         setErrorMessage('Failed to add product.');

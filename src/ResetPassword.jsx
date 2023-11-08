@@ -1,9 +1,7 @@
-
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import './reset-password.css'; 
+import './reset-password.css';
 
 export const ResetPassword = () => {
   const [formData, setFormData] = useState({
@@ -23,6 +21,12 @@ export const ResetPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.email.trim()) {
+      setErrorMessage('Email is required');
+      return; 
+    }
+
     try {
       const response = await fetch('http://localhost:4000/forgot-password', {
         method: 'POST',
@@ -33,10 +37,13 @@ export const ResetPassword = () => {
           email: formData.email,
         }),
       });
-    
+
       if (response.status === 200) {
         const data = await response.json();
         setSuccessMessage(data.message);
+        setTimeout(() => {
+          setSuccessMessage('');
+        }, 3000);
       } else {
         const errorText = await response.text();
         setErrorMessage(errorText);
@@ -44,7 +51,6 @@ export const ResetPassword = () => {
     } catch (error) {
       setErrorMessage('Failed to send reset instructions. Please try again.');
     }
-    
   };
 
   return (

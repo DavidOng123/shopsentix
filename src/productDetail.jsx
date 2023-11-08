@@ -8,8 +8,7 @@ import './productDetail.css';
 
 export const ProductDetail = () => {
   const { id } = useParams();
-  const { user } = useAuth();
-  const accessToken=localStorage.getItem('accessToken')
+  const { user, isAuthenticated, logout, refreshAccessToken, accessToken } = useAuth();
 
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -25,7 +24,7 @@ export const ProductDetail = () => {
   const [numReviewsToShow, setNumReviewsToShow] = useState(3);
   const [showMoreReviews, setShowMoreReviews] = useState(false);
   const [addToFavoritesSuccess, setAddToFavoritesSuccess] = useState(false);
-
+  const isUser = isAuthenticated && user && user.role === 'User';
 
  
 
@@ -234,9 +233,11 @@ export const ProductDetail = () => {
         <button className="add-to-cart-button" onClick={handleAddToCart}>
           Add to Cart
         </button>
-        <button className="add-to-favorites-button" onClick={handleAddToFavorites}>
-  Favorite
-</button>
+        {isUser && (
+  <button className="add-to-favorites-button" onClick={handleAddToFavorites}>
+    Favorite
+  </button>
+)}
       </div>
     </div>
   ) : (

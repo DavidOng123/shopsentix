@@ -183,8 +183,7 @@ app.post(
         role
       });
 
-      await newUser.save(); // Save the user to the database
-
+      await newUser.save();
       res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
       console.error(error);
@@ -442,7 +441,6 @@ app.get('/orders', async (req, res) => {
     const totalSales = orders.reduce((total, order) => total + order.total, 0);
     const totalOrders = orders.length;
 
-    // Respond with the total sales and total orders
     res.json({ totalSales, totalOrders });
   } catch (error) {
     console.error(error);
@@ -486,7 +484,6 @@ app.post('/products/:productId', async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    // Update the product data
     productToUpdate.name = name;
     productToUpdate.price = price;
     productToUpdate.description = description;
@@ -494,7 +491,7 @@ app.post('/products/:productId', async (req, res) => {
     productToUpdate.attributes = attributes;
     productToUpdate.quantity = quantity;
 
-    await productToUpdate.save(); // Save the changes to the database
+    await productToUpdate.save(); 
 
     return res.json({ message: 'Product updated successfully' });
   } catch (error) {
@@ -549,7 +546,7 @@ app.delete('/products/:productId', async (req, res) => {
       await cart.save();
     }
     } else {
-      await product.deleteOne;
+      await product.deleteOne();
     }
 
 
@@ -582,13 +579,11 @@ app.post('/add-to-cart', authenticateToken, async (req, res) => {
     let userCart = await CartModel.findOne({ user: userId });
 
     if (!userCart) {
-      // If the user doesn't have a cart, create a new one
       userCart = new CartModel({
         user: userId,
         items: [{ product: productId, quantity: parsedQuantity, attribute: attribute }],
       });
     } else {
-      // If the user already has a cart, add the item or update its quantity
       const existingItem = userCart.items.find((item) => item.product === productId);
 
       if (existingItem) {
