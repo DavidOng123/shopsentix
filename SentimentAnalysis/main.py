@@ -126,8 +126,34 @@ def apply_rule_based_sentiment_to_neutral(row):
 
 train_df['Sentiment'] = train_df.apply(apply_rule_based_sentiment_to_neutral, axis=1)
 
+# Data Statistics
+print("Dataset Shape:", train_df.shape)
+print(train_df.info())
+print("Missing Values:\n", train_df.isnull().sum())
 
-tfidf_vectorizer = TfidfVectorizer(stop_words="english", max_features=50000)
+# Class Distribution
+sentiment_counts = train_df['Sentiment'].value_counts()
+print("Sentiment Class Distribution:\n", sentiment_counts)
+
+# Text Length
+train_df['Text Length'] = train_df['Sentence'].apply(lambda x: len(x.split()))
+train_df['Text Length'].plot(kind='hist', bins=50, title='Text Length Distribution')
+
+# Word Frequency
+from wordcloud import WordCloud
+wordcloud = WordCloud(width=800, height=400).generate(' '.join(train_df['Sentence']))
+plt.figure(figsize=(10, 5))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis('off')
+plt.show()
+
+# Sentiment Distribution
+sentiment_counts.plot(kind='bar', title='Sentiment Distribution')
+
+plt.show()
+
+
+tfidf_vectorizer = TfidfVectorizer(stop_words="english", max_features=100000)
 
 X_train, X_test, y_train, y_test = train_test_split(train_df['Sentence'], train_df['Sentiment'], test_size=0.2, random_state=42)
 
