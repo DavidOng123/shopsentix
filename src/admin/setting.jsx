@@ -29,6 +29,10 @@ export const Setting = () => {
           <Link to='/admin/adminLogin' style={{ color: 'blue', textDecoration: 'underline' }}>
     Login here.
   </Link>
+  <br></br>
+  <Link to='/' style={{ color: 'blue', textDecoration: 'underline' }}>
+   home page
+  </Link>
           <Link></Link>
         </div>
         <AdminFooter />

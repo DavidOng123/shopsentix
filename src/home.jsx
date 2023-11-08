@@ -285,13 +285,13 @@ export const Home = () => {
               className={`category-button ${selectedCategory === 'television' ? 'active' : ''}`}
               onClick={() => handleCategoryClick('Television')}
             >
-              Tablet
+              Television
             </button>
             <button
               className={`category-button ${selectedCategory === 'wearable' ? 'active' : ''}`}
               onClick={() => handleCategoryClick('Wearable')}
             >
-              Laptop
+              Wearable
             </button>
           </div>
           
