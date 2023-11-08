@@ -77,9 +77,11 @@
                     <div className='select-controls'>
                         <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
                             <option value="all">All</option>
-                            <option value="Clothing">Clothing</option>
-                            <option value="Electronic">Electronics</option>
-                            <option value="Accessories">Accessories</option>
+                            <option value="Smartphone">Smartphone</option>
+                            <option value="Tablet">Tablet</option>
+                            <option value="Laptop">Laptop</option>
+                            <option value="Television">Television</option>
+                            <option value="Wearable">Wearable</option>
                         </select>
                         <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
                             <option value="priceAsc">Price: Low to High</option>

@@ -264,22 +264,34 @@ export const Home = () => {
               All
             </button>
             <button
-              className={`category-button ${selectedCategory === 'clothing' ? 'active' : ''}`}
-              onClick={() => handleCategoryClick('Clothing')}
+              className={`category-button ${selectedCategory === 'smartphone' ? 'active' : ''}`}
+              onClick={() => handleCategoryClick('Smartphone')}
             >
-              Clothing
+              Smartphone
             </button>
             <button
-              className={`category-button ${selectedCategory === 'electronics' ? 'active' : ''}`}
-              onClick={() => handleCategoryClick('Electronic')}
+              className={`category-button ${selectedCategory === 'tablet' ? 'active' : ''}`}
+              onClick={() => handleCategoryClick('Tablet')}
             >
-              Electronics
+              Tablet
             </button>
             <button
-              className={`category-button ${selectedCategory === 'accessories' ? 'active' : ''}`}
-              onClick={() => handleCategoryClick('Accessories')}
+              className={`category-button ${selectedCategory === 'laptop' ? 'active' : ''}`}
+              onClick={() => handleCategoryClick('Laptop')}
             >
-              Accessories
+              Laptop
+            </button>
+            <button
+              className={`category-button ${selectedCategory === 'television' ? 'active' : ''}`}
+              onClick={() => handleCategoryClick('Television')}
+            >
+              Tablet
+            </button>
+            <button
+              className={`category-button ${selectedCategory === 'wearable' ? 'active' : ''}`}
+              onClick={() => handleCategoryClick('Wearable')}
+            >
+              Laptop
             </button>
           </div>
           

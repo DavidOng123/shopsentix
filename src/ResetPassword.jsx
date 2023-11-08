@@ -41,6 +41,9 @@ export const ResetPassword = () => {
       if (response.status === 200) {
         const data = await response.json();
         setSuccessMessage(data.message);
+        setTimeout(() => {
+          setSuccessMessage('');
+        }, 3000);
       } else {
         const errorText = await response.text();
         setErrorMessage(errorText);

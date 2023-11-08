@@ -4,6 +4,7 @@ import AdminFooter from './adminFooter';
 import { useAuth } from '../auth';
 import './setting.css';
 
+import { Link, useNavigate } from 'react-router-dom';
 export const Setting = () => {
   const { user, login, logout } = useAuth();
   const isAdmin = user?.role === 'Admin';
@@ -25,6 +26,10 @@ export const Setting = () => {
         <AdminHeader />
         <div className="admin-dashboard-container">
           <p>You don't have access to this page.</p>
+          <Link to='/admin/adminLogin' style={{ color: 'blue', textDecoration: 'underline' }}>
+    Login here.
+  </Link>
+          <Link></Link>
         </div>
         <AdminFooter />
       </div>
