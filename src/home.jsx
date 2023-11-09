@@ -55,6 +55,8 @@ export const Home = () => {
     fetchTopRatedProducts();
     fetchSuggestedProducts();
     fetchMostPopularProducts();
+  
+  
   }, []);
 
   const [formData, setFormData] = useState({
@@ -170,16 +172,19 @@ export const Home = () => {
 
 
   const handleCategoryClick = (category) => {
-    setSelectedCategory(category);
-
+  setSelectedCategory(category)
     if (category === 'all') {
-      const filtered = products.slice(0, 3); // Limit to 3 products
+      const filtered = products.filter((product) => product.available === true).slice(0, 3);
       setFilteredProducts(filtered);
     } else {
-      const filtered = products.filter((product) => product.category === category).slice(0, 3);
+      const filtered = products
+        .filter((product) => product.category === category)
+        .filter((product) => product.available === true)
+        .slice(0, 3);
       setFilteredProducts(filtered);
     }
   };
+  
 
   const fetchProducts = async (category) => {
     try {
@@ -187,7 +192,7 @@ export const Home = () => {
       const product = await response.json();
       
 
-      const data = product.filter((product) => product.available === true).slice(0, 3).map((product) => ({
+      const data = product.filter((product) => product.available === true).map((product) => ({
         ...product,
         imageUrl: `http://localhost:4000/uploads/${product.file_name}`,
       }));
@@ -297,7 +302,7 @@ export const Home = () => {
           
           <div className="popular-category">
          
-  {filteredProducts.map((product) => (
+  {filteredProducts.slice(0, 3).map((product) => (
     <div className="product" key={product._id}>
       {product.quantity === 0 ? ( 
         <div>
