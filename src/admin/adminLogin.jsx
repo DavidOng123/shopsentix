@@ -43,7 +43,7 @@ export const AdminLogin = () => {
   };
 
   return (
-    <div>
+    <div className='adminwrapper'>
       <AdminHeader />
       <div className="admin-login-container">
         <h2>Admin Login</h2>

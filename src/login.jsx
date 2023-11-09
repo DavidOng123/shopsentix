@@ -89,7 +89,7 @@ export const Login = () => {
   };
 
   return (
-    <div className='wrapper'>
+    <div className='loginwrapper'>
       <Navbar />
 
       <div className='content-container'>

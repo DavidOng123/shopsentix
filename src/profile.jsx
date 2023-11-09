@@ -298,6 +298,12 @@ export const Profile = () => {
                     Processing
                   </button>
                   <button
+                    className={`filter-button ${filterStatus === 'delivered' ? 'active' : ''}`}
+                    onClick={() => setFilterStatus('delivered')}
+                  >
+                    Delivered
+                  </button>
+                  <button
                     className={`filter-button ${filterStatus === 'completed' ? 'active' : ''}`}
                     onClick={() => setFilterStatus('completed')}
                   >
