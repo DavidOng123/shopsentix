@@ -1,6 +1,9 @@
 
 .carousel-management {
     padding: 20px;
+    
+  min-height: 80vh;
+  position: relative;
   }
   
   .carousel-management h1 {

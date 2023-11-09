@@ -1,6 +1,9 @@
 
 .inventory-container {
     margin: 20px;
+    
+  min-height: 82vh;
+  position: relative;
   }
   
   .inventory-table {

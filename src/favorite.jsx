@@ -94,7 +94,7 @@ export const Favorite = () => {
                   className="favorite-image"
                 />
                 <p className="favorite-name">{favorite.name}</p>
-                <p className="favorite-description">{favorite.description}</p>
+                <p className="favorite-description">Price: ${favorite.price}</p>
               </Link>
             </div>
           ))}

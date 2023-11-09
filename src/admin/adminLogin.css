@@ -1,3 +1,9 @@
+.adminwrapper{
+
+  min-height: 150vh;
+  position: relative;
+}
+
 .admin-login-container {
     display: flex;
     flex-direction: column;
